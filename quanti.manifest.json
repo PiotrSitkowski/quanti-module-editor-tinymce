@@ -19,7 +19,7 @@
     "outputFile": "dist/worker.js",
     "bundleHash": "sha256:dccd8333d925ba99e80049cb5b32cd1fd87e5a80eb345e01028ba0b333ce843d",
     "bundleSize": 3240,
-    "builtAt": "2026-03-26T18:22:54.214Z"
+    "builtAt": "2026-03-26T19:13:10.674Z"
   },
   "bindings": {
     "services": [
