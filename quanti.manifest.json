@@ -1,0 +1,138 @@
+{
+  "$schema": "https://quanti.dev/schemas/manifest.v1.json",
+  "version": 1,
+  "module": {
+    "name": "quanti-module-editor-wysywig-mce",
+    "displayName": "Editor Wysywig Mce",
+    "version": "1.0.0",
+    "description": "Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides"
+  },
+  "fleet": {
+    "serviceType": "content",
+    "requestedCapabilities": [
+      "crud"
+    ],
+    "schemaVersion": 1
+  },
+  "build": {
+    "entryPoint": "src/worker.ts",
+    "outputFile": "dist/worker.js",
+    "bundleHash": "sha256:dccd8333d925ba99e80049cb5b32cd1fd87e5a80eb345e01028ba0b333ce843d",
+    "bundleSize": 3240,
+    "builtAt": "2026-03-26T16:20:31.633Z"
+  },
+  "bindings": {
+    "services": [
+      {
+        "binding": "BACKEND",
+        "service": "quanti-backend"
+      }
+    ],
+    "queues": [
+      {
+        "binding": "QUEUE_MAIN",
+        "queue": "quanti-main-queue"
+      }
+    ]
+  },
+  "contract": {
+    "methods": [
+      "list",
+      "getById",
+      "create",
+      "update",
+      "delete"
+    ]
+  },
+  "semantic_knowledge": {
+    "overview": "Reusable WYSIWYG editor slot module powered by **TinyMCE Cloud**.\nThis module does **not** manage its own database. It acts as a pure UI slot\nthat other modules (posts, pages, emails, articles) embed to enable formatted HTML authoring.\n\n**Key concepts:**\n- The editor receives initial HTML via `props.context.data.initialContent`\n- Content changes are emitted back via `props.context.actions.onChange(html: string)`\n- Save action is emitted via `props.context.actions.onSave(html: string)`\n- TinyMCE jest ładowany z **Quanti CDN (R2)** via `src/lib/tinyMceLoader.ts`\n  (URL: `https://cdn.quanti-system.cloud/libs/tinymce/tinymce.min.js`)",
+    "fileMap": "| Plik | Logika Biznesowa |\n|------|-----------------||\n| src/worker.ts | WorkerEntrypoint stub -- no active DB logic; contract validation only |\n| schema.ts | Drizzle ORM schema stub (mandatory columns only -- no module-specific columns) |\n| contract.ts | RPC contract -- Zod schemas for tenant-isolated payload validation |\n| definition.ts | Module manifest -- configSchema (tinyMceApiKey, editorHeight, plugins, toolbar) |\n| src/hooks/useModuleTranslation.ts | i18n hook -- returns EN/PL translations for editor labels |\n| src/locales/en.ts | English translations (source of truth) |\n| src/locales/pl.ts | Polish translations (must mirror en.ts keys) |\n| src/locales/index.ts | Lazy-loaded locale barrel export |\n| src/components/EditorWysywigMceTable.tsx | Main WYSIWYG editor slot: loads TinyMCE from CDN, handles onChange/onSave/onCancel callbacks |\n| src/components/EditorWysywigMceDetailPanel.tsx | Read-only HTML preview panel from context.data.content |\n| src/components/EditorWysywigMceDashboardWidget.tsx | Dashboard widget: shows TinyMCE config status and API key state |\n| src/components/index.ts | Barrel export for all UI components |\n| src/index.ts | MFE entry barrel -- exports components for R2 bundle |\n| src/workers.ts | CQRS Queue Consumer -- processes async events (stub) |\n| src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |\n| .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |",
+    "rulesAndConstraints": "- **No direct database writes from UI components** -- this module is a pure UI primitive\n- **TinyMCE API Key** is tenant-configurable via `configSchema.tinyMceApiKey` (Admin UI)\n- **HTML sanitization** is the responsibility of the **host module** (posts, pages, etc.)\n  before storing content in their DB or before passing it to the detail panel\n- Never call `fetch()` inside any component -- all communication via `context.api` or `context.actions`\n- TinyMCE ładowany z **Quanti CDN (R2)** via `src/lib/tinyMceLoader.ts` — **zero połączeń z zewnętrznymi sieciami**\n- lib-Isolation Rule: żaden komponent UI nie może inline wstrzykiwać `<script>` — wyłącznie przez `loadTinyMceFromQuantiCdn()`",
+    "orchestrationGuide": "**Triggered by:**\n- Host module renders `editor_wysywig_mce_main_view` slot\n- Host module renders `editor_wysywig_mce_detail_panel` slot (preview)\n- Dashboard renders `dashboard_widget` slot\n\n**Emits (via context.actions):**\n- `context.actions.onChange(html: string)` -- on every keystroke / content change\n- `context.actions.onSave(html: string)` -- on Save button click\n- `context.actions.onCancel()` -- on Cancel button click\n\n**Composes with:**\n- `posts` module -- article body editing\n- `pages` module -- static page content editing\n- `emails` module -- email template editing"
+  },
+  "supportedLanguages": [
+    "en",
+    "pl"
+  ],
+  "configuration": {
+    "schema": {
+      "type": "object",
+      "properties": {
+        "tinyMceApiKey": {
+          "type": "string",
+          "default": "7ozvvd4u65sd961sn25w20ttvj1kzkbgyatllnn5xbhoeose"
+        },
+        "editorHeight": {
+          "type": "number",
+          "minimum": 200,
+          "maximum": 2000,
+          "default": 500
+        },
+        "enableImageTools": {
+          "type": "boolean",
+          "default": false
+        },
+        "toolbar": {
+          "type": "string",
+          "default": "undo redo | blocks | bold italic underline | bullist numlist | link | removeformat"
+        },
+        "plugins": {
+          "type": "string",
+          "default": "lists link autolink"
+        },
+        "menubar": {
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "additionalProperties": false,
+      "$schema": "http://json-schema.org/draft-07/schema#"
+    },
+    "ui": {
+      "tinyMceApiKey": {
+        "label": "TinyMCE API Key (legacy — not used with Quanti CDN)",
+        "widget": "text"
+      },
+      "editorHeight": {
+        "label": "Editor Height (px)",
+        "widget": "slider"
+      },
+      "enableImageTools": {
+        "label": "Enable Image Tools Plugin",
+        "widget": "toggle"
+      },
+      "toolbar": {
+        "label": "Toolbar Buttons",
+        "widget": "text"
+      },
+      "plugins": {
+        "label": "TinyMCE Plugins",
+        "widget": "text"
+      },
+      "menubar": {
+        "label": "Show Menu Bar",
+        "widget": "toggle"
+      }
+    }
+  },
+  "uiExtensions": [
+    {
+      "slot": "editor_wysywig_mce_main_view",
+      "component": "EditorWysywigMceTable",
+      "priority": 10,
+      "description": "Glowny slot edytora WYSIWYG oparty na TinyMCE. Renderuje pelnoekranowe okno edytora, laduje TinyMCE z CDN, odbiera tresc HTML z context.data.initialContent i wywoluje context.actions.onChange oraz onSave z nowa trescia HTML."
+    },
+    {
+      "slot": "editor_wysywig_mce_detail_panel",
+      "component": "EditorWysywigMceDetailPanel",
+      "priority": 10,
+      "description": "Panel podgladu tresci HTML wyprodukowanej przez edytor. Wyswietla bezpieczny rendering HTML z context.data.content w trybie tylko do odczytu, umozliwiajac modulom-hostom podglad zapisanej tresci bez aktywnego edytora TinyMCE."
+    },
+    {
+      "slot": "dashboard_widget",
+      "component": "EditorWysywigMceDashboardWidget",
+      "priority": 10,
+      "description": "Widget dashboardu informujacy o dostepnosci edytora WYSIWYG TinyMCE w platformie. Wyswietla status konfiguracji klucza API oraz skrot do otwarcia edytora dla administratorow i redaktorow tresci platformy Quanti."
+    }
+  ]
+}
