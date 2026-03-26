@@ -25,7 +25,7 @@
 
 import { Component, type ReactNode, Suspense, useEffect, useRef, useState, useCallback, useId } from 'react';
 import { useModuleTranslation } from '../hooks/useModuleTranslation.js';
-import { loadTinyMceFromQuantiCdn } from '../lib/tinyMceLoader.js';
+import { loadTinyMceFromQuantiCdn, QUANTI_TINYMCE_CDN_URL } from '../lib/tinyMceLoader.js';
 
 // TinyMCE is loaded from CDN -- not bundled. type-only reference.
 declare global {
@@ -92,14 +92,12 @@ class ErrorBoundary extends Component<
 function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
     const t = useModuleTranslation(context.lang as 'en' | 'pl');
     const editorRef = useRef<HTMLDivElement>(null);
-    const editorIdSuffix = useId().replace(/:/g, '');
-    const editorId = `tinymce-editor-${editorIdSuffix}`;
+    const editorId = `tinymce-editor-${useId().replace(/:/g, '')}`;
 
     const [isLoading, setIsLoading] = useState(true);
     const [hasError, setHasError] = useState(false);
     const [currentHtml, setCurrentHtml] = useState(context.data?.initialContent ?? '');
 
-    const apiKey = context.data?.tinyMceApiKey ?? '7ozvvd4u65sd961sn25w20ttvj1kzkbgyatllnn5xbhoeose';
     const userConfig = context.data?.config ?? {};
     const height = (userConfig.height as number) ?? 500;
     const toolbar = (userConfig.toolbar as string) ?? 'undo redo | blocks | bold italic underline strikethrough | bullist numlist | alignleft aligncenter alignright | link | removeformat | code';
@@ -115,13 +113,18 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
 
     useEffect(() => {
         let destroyed = false;
+        // base_url tells TinyMCE where to find skins/themes/icons on our R2 CDN
+        const baseUrl = QUANTI_TINYMCE_CDN_URL.replace('/tinymce.min.js', '');
 
         loadTinyMceFromQuantiCdn()
             .then(() => {
-                if (destroyed || !document.getElementById(editorId)) return;
+                if (destroyed || !editorRef.current) return;
 
                 window.tinymce.init({
-                    selector: `#${editorId}`,
+                    target: editorRef.current,   // ref instead of selector — safer in React
+                    license_key: 'gpl',          // required for TinyMCE 7 Community
+                    base_url: baseUrl,            // CRITICAL: skins/themes path on R2
+                    suffix: '.min',
                     height,
                     toolbar,
                     plugins,
@@ -132,7 +135,6 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
                     resize: true,
                     skin: 'oxide',
                     content_css: 'default',
-                    // Quanti DS: base font text-[13px]
                     content_style: `
                         body {
                             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -168,14 +170,13 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
 
         return () => {
             destroyed = true;
-            // Cleanup TinyMCE instance on unmount
             if (window.tinymce) {
                 const inst = window.tinymce.get(editorId);
                 if (inst) inst.destroy();
             }
         };
         // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [editorId, apiKey]);
+    }, [editorId]);
 
     const handleSave = useCallback(() => {
         const html = window.tinymce?.get(editorId)?.getContent() ?? currentHtml;
@@ -198,13 +199,19 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
     }
 
     return (
-        <div className="w-full" data-testid="editor-container">
-            {/* TinyMCE mounts here -- ID must be stable across re-renders */}
+        <div className="w-full relative" style={{ minHeight: `${height}px` }} data-testid="editor-container">
+            {isLoading && (
+                <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-10 rounded-md">
+                    <p className="text-[13px] text-gray-400 animate-pulse">{t.loadingText}</p>
+                </div>
+            )}
+            {/* TinyMCE mounts here via ref — height forced so browser doesn't collapse the div */}
             <div
                 id={editorId}
                 ref={editorRef}
                 data-testid="editor-textarea"
                 className="w-full rounded-md border border-gray-200 dark:border-gray-700"
+                style={{ height: `${height}px` }}
             />
         </div>
     );

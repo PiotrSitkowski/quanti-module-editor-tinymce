@@ -1,4 +1,4 @@
-# Test Run — 2026-03-26T16:20:31.169Z
+# Test Run — 2026-03-26T18:22:53.760Z
 
 > quanti-module-editor-wysywig-mce@1.0.1 test
 > vitest run
@@ -6,7 +6,8 @@
 
  RUN  v3.2.4 /Users/piotr/internet-web/Universal_media/Quanti/Quanti-CLI/quanti-module-editor-wysywig-mce
 
- ✓ src/worker.test.ts (3 tests) 111ms
+ ✓ src/worker.test.ts (3 tests) 58ms
+ ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 52ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render preview container when content is provided
 🔥 SHELL PRZESYŁA DO PODGLĄDU: {
   projectId: [33m42[39m,
@@ -23,7 +24,6 @@ stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceD
   data: { content: [32m'<p>Hello <strong>world</strong></p>'[39m }
 }
 
- ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 49ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render empty state when content is empty string
 🔥 SHELL PRZESYŁA DO PODGLĄDU: {
   projectId: [33m42[39m,
@@ -51,10 +51,10 @@ stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceD
   data: { content: [32m'<p>Test</p>'[39m, label: [32m'My Custom Label'[39m }
 }
 
- ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 192ms
- ✓ src/components/EditorWysywigMceTable.test.tsx (6 tests) 200ms
+ ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 100ms
+ ✓ src/components/EditorWysywigMceTable.test.tsx (6 tests) 124ms
 
  Test Files  4 passed (4)
       Tests  16 passed (16)
-   Start at  17:20:26
-   Duration  3.48s (transform 219ms, setup 0ms, collect 1.20s, tests 552ms, environment 4.69s, prepare 1.33s)
+   Start at  19:22:49
+   Duration  3.11s (transform 160ms, setup 0ms, collect 993ms, tests 335ms, environment 4.90s, prepare 820ms)
