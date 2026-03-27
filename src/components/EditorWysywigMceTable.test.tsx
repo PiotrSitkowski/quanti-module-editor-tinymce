@@ -13,7 +13,7 @@
  */
 
 import { describe, it, expect, vi, afterEach, beforeEach } from 'vitest';
-import { render, screen, cleanup, fireEvent } from '@testing-library/react';
+import { render, screen, cleanup, act } from '@testing-library/react';
 import { EditorWysywigMceTable } from './EditorWysywigMceTable';
 
 // Mock TinyMCE CDN loading -- no real network in tests
@@ -46,11 +46,31 @@ afterEach(() => {
     vi.restoreAllMocks();
 });
 
-// Factory -- builds a valid context object
+// Factory -- builds a valid context object (extended with context.config per plan §5.2)
 const buildCtx = (overrides: Record<string, unknown> = {}) => ({
     projectId: 42,
     instanceKey: 'default',
     lang: 'en' as const,
+    config: {
+        height: 500,
+        width: 'auto' as const,
+        resize: 'true' as const,
+        menubar: false,
+        statusbar: true,
+        toolbarSticky: false,
+        branding: false,
+        skin: 'oxide' as const,
+        contentCss: 'default' as const,
+        contentStyle: '',
+        plugins: 'lists link autolink code wordcount',
+        toolbar: 'bold italic | link',
+        toolbarMode: 'floating' as const,
+        browserSpellcheck: true,
+        pasteAsText: false,
+        pasteDataImages: true,
+        automaticUploads: true,
+        tinyMceApiKey: '',
+    },
     data: {
         initialContent: '',
         tinyMceApiKey: 'test-api-key-123',
@@ -159,5 +179,116 @@ describe('EditorWysywigMceTable (main_view slot)', () => {
         const ctx = buildCtx({ projectId: 0 });
         render(<EditorWysywigMceTable context={ctx} />);
         expect(screen.getByTestId('editor-container')).toBeTruthy();
+    });
+});
+
+// ─────────────────────────────────────────────────────────────────────────────
+// 🔴 RED SUITE: context.config — TDD dla planu §5 (tinymce-configuration-plan)
+//
+// Testy weryfikują:
+//   1. context.config jest priorytetem nad context.data.config (backward compat)
+//   2. Wszystkie 16 pól jest przekazywanych do tinymce.init
+//   3. Mapowanie lang → TinyMCE language
+//   4. Iron Guard dla null/undefined context
+// ─────────────────────────────────────────────────────────────────────────────
+
+describe('EditorWysywigMceTable — Config from context.config [TDD §5]', () => {
+
+    // ── Happy path: pełna konfiguracja ───────────────────────────────────────
+    it('renders with full context.config — no errors thrown', async () => {
+        const ctx = buildCtx();
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect(screen.getByTestId('editor-container')).toBeTruthy();
+    });
+
+    // ── Happy path: puste config — defaulty z planu ──────────────────────────
+    it('renders with empty config {} — default height 500 applies', async () => {
+        const ctx = buildCtx({ config: {} });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect(screen.getByTestId('editor-container')).toBeTruthy();
+        expect((window as any).tinymce.init).toHaveBeenCalledWith(
+            expect.objectContaining({ height: 500 })
+        );
+    });
+
+    // ── Happy path: brak klucza config — Iron Guard + defaulty ───────────────
+    it('renders without context.config key — Iron Guard + defaults', async () => {
+        const ctx = buildCtx({ config: undefined });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect(screen.getByTestId('editor-container')).toBeTruthy();
+    });
+
+    // ── Happy path: height z context.config ─────────────────────────────────
+    it('tinymce.init called with height 800 from context.config', async () => {
+        const baseConfig = buildCtx().config;
+        const ctx = buildCtx({ config: { ...baseConfig, height: 800 } });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect((window as any).tinymce.init).toHaveBeenCalledWith(
+            expect.objectContaining({ height: 800 })
+        );
+    });
+
+    // ── Happy path: skin oxide-dark z context.config ─────────────────────────
+    it('tinymce.init called with skin oxide-dark from context.config', async () => {
+        const baseConfig = buildCtx().config;
+        const ctx = buildCtx({ config: { ...baseConfig, skin: 'oxide-dark' } });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect((window as any).tinymce.init).toHaveBeenCalledWith(
+            expect.objectContaining({ skin: 'oxide-dark' })
+        );
+    });
+
+    // ── Happy path: mapowanie lang pl → TinyMCE 'pl' ─────────────────────────
+    it('lang pl maps to TinyMCE language pl', async () => {
+        const ctx = buildCtx({ lang: 'pl' });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect((window as any).tinymce.init).toHaveBeenCalledWith(
+            expect.objectContaining({ language: 'pl' })
+        );
+    });
+
+    // ── Happy path: mapowanie lang en → TinyMCE 'en_US' ─────────────────────
+    it('lang en maps to TinyMCE language en_US', async () => {
+        const ctx = buildCtx({ lang: 'en' });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect((window as any).tinymce.init).toHaveBeenCalledWith(
+            expect.objectContaining({ language: 'en_US' })
+        );
+    });
+
+    // ── Sad path: context=null → context-loader (Iron Guard) ─────────────────
+    it('context=null renders context-loader — Iron Guard prevents crash', () => {
+        render(<EditorWysywigMceTable context={null as any} />);
+        expect(screen.queryByTestId('editor-container')).toBeNull();
+        expect(screen.getByTestId('context-loader')).toBeTruthy();
+    });
+
+    // ── Sad path: context=undefined → context-loader (Iron Guard) ────────────
+    it('context=undefined renders context-loader — Iron Guard prevents crash', () => {
+        render(<EditorWysywigMceTable />);
+        expect(screen.queryByTestId('editor-container')).toBeNull();
+        expect(screen.getByTestId('context-loader')).toBeTruthy();
+    });
+
+    // ── Config: menubar=true przekazane do tinymce.init ──────────────────────
+    it('config.menubar=true is passed to tinymce.init', async () => {
+        const baseConfig = buildCtx().config;
+        const ctx = buildCtx({ config: { ...baseConfig, menubar: true } });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect((window as any).tinymce.init).toHaveBeenCalledWith(
+            expect.objectContaining({ menubar: true })
+        );
+    });
+
+    // ── Backward compat: legacy context.data.config.height ───────────────────
+    it('legacy context.data.config.height used when context.config absent', async () => {
+        const ctx = buildCtx({
+            config: undefined,
+            data: { initialContent: '', config: { height: 700 } },
+        });
+        await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
+        expect((window as any).tinymce.init).toHaveBeenCalledWith(
+            expect.objectContaining({ height: 700 })
+        );
     });
 });

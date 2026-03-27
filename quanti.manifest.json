@@ -19,7 +19,7 @@
     "outputFile": "dist/worker.js",
     "bundleHash": "sha256:dccd8333d925ba99e80049cb5b32cd1fd87e5a80eb345e01028ba0b333ce843d",
     "bundleSize": 3240,
-    "builtAt": "2026-03-26T19:13:10.674Z"
+    "builtAt": "2026-03-27T22:08:05.036Z"
   },
   "bindings": {
     "services": [
@@ -60,29 +60,126 @@
       "properties": {
         "tinyMceApiKey": {
           "type": "string",
-          "default": "7ozvvd4u65sd961sn25w20ttvj1kzkbgyatllnn5xbhoeose"
+          "default": "",
+          "description": "Klucz API TinyMCE. Pozostaw puste dla instalacji GPL z Quanti CDN."
         },
-        "editorHeight": {
+        "width": {
+          "anyOf": [
+            {
+              "type": "number",
+              "minimum": 200,
+              "maximum": 3000
+            },
+            {
+              "type": "string",
+              "const": "auto"
+            }
+          ],
+          "default": "auto",
+          "description": "Szerokość edytora w pikselach lub \"auto\" dla 100% kontenera."
+        },
+        "height": {
           "type": "number",
           "minimum": 200,
           "maximum": 2000,
-          "default": 500
+          "default": 500,
+          "description": "Wysokość edytora w pikselach (200–2000)."
         },
-        "enableImageTools": {
-          "type": "boolean",
-          "default": false
-        },
-        "toolbar": {
+        "resize": {
           "type": "string",
-          "default": "undo redo | blocks | bold italic underline | bullist numlist | link | removeformat"
-        },
-        "plugins": {
-          "type": "string",
-          "default": "lists link autolink"
+          "enum": [
+            "false",
+            "true",
+            "both"
+          ],
+          "default": "true",
+          "description": "Czy użytkownik może zmieniać rozmiar edytora: false/true (pionowy)/both (obie osie)."
         },
         "menubar": {
           "type": "boolean",
-          "default": false
+          "default": false,
+          "description": "Pokaż pasek menu (File, Edit, View, Insert, Format, Tools, Table, Help)."
+        },
+        "statusbar": {
+          "type": "boolean",
+          "default": true,
+          "description": "Pokaż pasek statusu na dole edytora ze licznikiem słów i rozmiarem."
+        },
+        "toolbarSticky": {
+          "type": "boolean",
+          "default": false,
+          "description": "Przyklejony pasek narzędzi podczas scrollowania długich treści."
+        },
+        "branding": {
+          "type": "boolean",
+          "default": false,
+          "description": "Pokaż logo TinyMCE w pasku statusu (false = ukryj dla white-label)."
+        },
+        "skin": {
+          "type": "string",
+          "enum": [
+            "oxide",
+            "oxide-dark"
+          ],
+          "default": "oxide",
+          "description": "Motyw wizualny edytora: oxide (jasny) lub oxide-dark (ciemny)."
+        },
+        "contentCss": {
+          "type": "string",
+          "enum": [
+            "default",
+            "dark",
+            "document",
+            "writer"
+          ],
+          "default": "default",
+          "description": "Styl CSS obszaru edycji: default, dark, document (szerokość ograniczona), writer."
+        },
+        "contentStyle": {
+          "type": "string",
+          "default": "",
+          "description": "Niestandardowy CSS wstrzykiwany do iframe edytora. Nadpisuje contentCss dla zaawansowanych stylizacji."
+        },
+        "plugins": {
+          "type": "string",
+          "default": "advlist autolink lists link image charmap preview anchor searchreplace visualblocks code fullscreen insertdatetime media table help wordcount",
+          "description": "Lista pluginów TinyMCE oddzielonych spacjami. Dostępne: advlist, autolink, lists, link, image, charmap, preview, anchor, searchreplace, visualblocks, code, fullscreen, insertdatetime, media, table, help, wordcount."
+        },
+        "toolbar": {
+          "type": "string",
+          "default": "undo redo | blocks | bold italic underline strikethrough | alignleft aligncenter alignright alignjustify | bullist numlist outdent indent | link image | removeformat | code | fullscreen",
+          "description": "Konfiguracja paska narzędzi. Rozdzielaj grupy znakiem |. Użyj false aby ukryć pasek."
+        },
+        "toolbarMode": {
+          "type": "string",
+          "enum": [
+            "floating",
+            "sliding",
+            "scrolling",
+            "wrap"
+          ],
+          "default": "floating",
+          "description": "Zachowanie paska narzędzi gdy przyciski nie mieszczą się: floating (dropdown), sliding, scrolling, wrap."
+        },
+        "browserSpellcheck": {
+          "type": "boolean",
+          "default": true,
+          "description": "Włącz sprawdzanie pisowni przez przeglądarkę w obszarze edycji."
+        },
+        "pasteAsText": {
+          "type": "boolean",
+          "default": false,
+          "description": "Wklejaj treść zawsze jako czysty tekst (usuwa formatowanie HTML ze schowka)."
+        },
+        "pasteDataImages": {
+          "type": "boolean",
+          "default": true,
+          "description": "Zezwól na wklejanie obrazów jako base64 data URI bezpośrednio do treści."
+        },
+        "automaticUploads": {
+          "type": "boolean",
+          "default": true,
+          "description": "Automatycznie uploaduj obrazy po wklejeniu lub przeciągnięciu (wymaga pluginu image)."
         }
       },
       "additionalProperties": false,
@@ -90,28 +187,169 @@
     },
     "ui": {
       "tinyMceApiKey": {
-        "label": "TinyMCE API Key (legacy — not used with Quanti CDN)",
-        "widget": "text"
+        "label": "TinyMCE API Key",
+        "widget": "text",
+        "description": "Opcjonalny klucz komercyjny. Przy korzystaniu z Quanti CDN (GPL) zostaw puste.",
+        "group": "Core"
       },
-      "editorHeight": {
-        "label": "Editor Height (px)",
-        "widget": "slider"
+      "width": {
+        "label": "Szerokość edytora",
+        "widget": "text",
+        "description": "Liczba (px) lub \"auto\" dla pełnej szerokości.",
+        "group": "Układ"
       },
-      "enableImageTools": {
-        "label": "Enable Image Tools Plugin",
-        "widget": "toggle"
+      "height": {
+        "label": "Wysokość edytora (px)",
+        "widget": "number",
+        "min": 200,
+        "max": 2000,
+        "group": "Układ"
       },
-      "toolbar": {
-        "label": "Toolbar Buttons",
-        "widget": "text"
-      },
-      "plugins": {
-        "label": "TinyMCE Plugins",
-        "widget": "text"
+      "resize": {
+        "label": "Zmiana rozmiaru",
+        "widget": "select",
+        "options": [
+          {
+            "value": "false",
+            "label": "Wyłączona"
+          },
+          {
+            "value": "true",
+            "label": "Pionowa"
+          },
+          {
+            "value": "both",
+            "label": "Pionowa i pozioma"
+          }
+        ],
+        "group": "Układ"
       },
       "menubar": {
-        "label": "Show Menu Bar",
-        "widget": "toggle"
+        "label": "Pasek menu",
+        "widget": "switch",
+        "description": "Wyświetl pasek z menu File/Edit/View/Insert/Format/Tools/Table/Help.",
+        "group": "Układ"
+      },
+      "statusbar": {
+        "label": "Pasek statusu",
+        "widget": "switch",
+        "description": "Wyświetl dolny pasek z licznikiem słów i uchwytem rozmiaru.",
+        "group": "Układ"
+      },
+      "toolbarSticky": {
+        "label": "Przyklejony pasek narzędzi",
+        "widget": "switch",
+        "description": "Pasek narzędzi pozostaje widoczny podczas scrollowania.",
+        "group": "Układ"
+      },
+      "branding": {
+        "label": "Logo TinyMCE (branding)",
+        "widget": "switch",
+        "description": "Ukryj/pokaż logo TinyMCE w pasku statusu (zalecane: wyłączone).",
+        "group": "Wygląd"
+      },
+      "skin": {
+        "label": "Motyw edytora",
+        "widget": "select",
+        "options": [
+          {
+            "value": "oxide",
+            "label": "Oxide (jasny)"
+          },
+          {
+            "value": "oxide-dark",
+            "label": "Oxide Dark (ciemny)"
+          }
+        ],
+        "group": "Wygląd"
+      },
+      "contentCss": {
+        "label": "Styl obszaru edycji",
+        "widget": "select",
+        "options": [
+          {
+            "value": "default",
+            "label": "Domyślny"
+          },
+          {
+            "value": "dark",
+            "label": "Ciemny"
+          },
+          {
+            "value": "document",
+            "label": "Dokument (ograniczona szerokość)"
+          },
+          {
+            "value": "writer",
+            "label": "Writer (czcionka szeryfowa)"
+          }
+        ],
+        "group": "Wygląd"
+      },
+      "contentStyle": {
+        "label": "Niestandardowy CSS (content_style)",
+        "widget": "textarea",
+        "description": "CSS wstrzykiwany do iframe edytora. Np. body { font-family: Georgia; }",
+        "group": "Wygląd"
+      },
+      "plugins": {
+        "label": "Pluginy TinyMCE",
+        "widget": "textarea",
+        "description": "Lista pluginów oddzielonych spacjami. Zmiana wymaga przeładowania edytora.",
+        "group": "Funkcjonalność"
+      },
+      "toolbar": {
+        "label": "Pasek narzędzi",
+        "widget": "textarea",
+        "description": "Konfiguracja przycisków. Grupy rozdzielaj |. Np: bold italic | link | code",
+        "group": "Funkcjonalność"
+      },
+      "toolbarMode": {
+        "label": "Tryb paska narzędzi",
+        "widget": "select",
+        "options": [
+          {
+            "value": "floating",
+            "label": "Floating (dropdown)"
+          },
+          {
+            "value": "sliding",
+            "label": "Sliding (rozwijany)"
+          },
+          {
+            "value": "scrolling",
+            "label": "Scrolling (przewijany)"
+          },
+          {
+            "value": "wrap",
+            "label": "Wrap (zawijany)"
+          }
+        ],
+        "group": "Funkcjonalność"
+      },
+      "browserSpellcheck": {
+        "label": "Sprawdzanie pisowni",
+        "widget": "switch",
+        "description": "Podkreślanie błędów przez wbudowaną przeglądarkową korektę ortografii.",
+        "group": "Zachowanie"
+      },
+      "pasteAsText": {
+        "label": "Wklejaj jako czysty tekst",
+        "widget": "switch",
+        "description": "Usuwa formatowanie HTML podczas wklejania ze schowka.",
+        "group": "Zachowanie"
+      },
+      "pasteDataImages": {
+        "label": "Wklejanie obrazów (base64)",
+        "widget": "switch",
+        "description": "Zezwól na wklejanie obrazów ze schowka bezpośrednio do treści edytora.",
+        "group": "Zachowanie"
+      },
+      "automaticUploads": {
+        "label": "Automatyczny upload obrazów",
+        "widget": "switch",
+        "description": "Automatycznie uploaduje obrazy base64 po wklejeniu (wymaga konfiguracji images_upload_url).",
+        "group": "Zachowanie"
       }
     }
   },
@@ -120,7 +358,7 @@
       "slot": "editor_wysywig_mce_main_view",
       "component": "EditorWysywigMceTable",
       "priority": 10,
-      "description": "Glowny slot edytora WYSIWYG oparty na TinyMCE. Renderuje pelnoekranowe okno edytora, laduje TinyMCE z CDN, odbiera tresc HTML z context.data.initialContent i wywoluje context.actions.onChange oraz onSave z nowa trescia HTML."
+      "description": "Główny slot edytora WYSIWYG oparty na TinyMCE. Renderuje edytor z pełną konfiguracją z context.config (skórka, toolbar, pluginy, wymiary, zachowanie wklejania). Odbiera treść HTML z context.data.initialContent i emituje zmiany przez context.actions.onChange i onSave."
     },
     {
       "slot": "editor_wysywig_mce_detail_panel",

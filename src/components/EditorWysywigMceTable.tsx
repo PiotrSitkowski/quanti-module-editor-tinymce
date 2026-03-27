@@ -34,6 +34,7 @@ declare global {
     }
 }
 
+// Legacy interface for backward-compat with context.data.config
 interface TinyMceConfig {
     toolbar?: string;
     plugins?: string;
@@ -42,15 +43,38 @@ interface TinyMceConfig {
     [key: string]: unknown;
 }
 
+// New: top-level context.config injected by Kernel (per plan §4.1)
+interface EditorConfigFromContext {
+    tinyMceApiKey?: string;
+    width?: number | 'auto';
+    height?: number;
+    resize?: 'false' | 'true' | 'both';
+    menubar?: boolean;
+    statusbar?: boolean;
+    toolbarSticky?: boolean;
+    branding?: boolean;
+    skin?: 'oxide' | 'oxide-dark';
+    contentCss?: 'default' | 'dark' | 'document' | 'writer';
+    contentStyle?: string;
+    plugins?: string;
+    toolbar?: string;
+    toolbarMode?: 'floating' | 'sliding' | 'scrolling' | 'wrap';
+    browserSpellcheck?: boolean;
+    pasteAsText?: boolean;
+    pasteDataImages?: boolean;
+    automaticUploads?: boolean;
+}
+
 interface EditorWysywigMceTableProps {
     context: {
         projectId: number;
         instanceKey?: string;
         lang?: string;
+        config?: EditorConfigFromContext;   // New: Kernel-injected config (priority)
         data?: {
             initialContent?: string;
             tinyMceApiKey?: string;
-            config?: TinyMceConfig;
+            config?: TinyMceConfig;         // Legacy: backward-compat fallback
         };
         actions?: {
             onChange?: (html: string) => void;
@@ -64,6 +88,31 @@ interface EditorWysywigMceTableProps {
         [key: string]: unknown;
     };
 }
+
+// ── Stałe domyślne (poza komponentem — plan §4.3) ────────────────────────────
+const DEFAULT_PLUGINS =
+    'advlist autolink lists link image charmap preview anchor ' +
+    'searchreplace visualblocks code fullscreen insertdatetime ' +
+    'media table help wordcount';
+
+const DEFAULT_TOOLBAR =
+    'undo redo | blocks | bold italic underline strikethrough | ' +
+    'alignleft aligncenter alignright alignjustify | ' +
+    'bullist numlist outdent indent | link image | ' +
+    'removeformat | code | fullscreen';
+
+const DEFAULT_CONTENT_STYLE = `
+    body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        font-size: 13px;
+        line-height: 1.6;
+        color: #111827;
+        margin: 12px;
+    }
+`;
+
+// Mapowanie Quanti lang → TinyMCE language code (plan §4.2)
+const LANG_MAP: Record<string, string> = { pl: 'pl', en: 'en_US' };
 
 // ErrorBoundary
 class ErrorBoundary extends Component<
@@ -98,11 +147,38 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
     const [hasError, setHasError] = useState(false);
     const [currentHtml, setCurrentHtml] = useState(context.data?.initialContent ?? '');
 
-    const userConfig = context.data?.config ?? {};
-    const height = (userConfig.height as number) ?? 500;
-    const toolbar = (userConfig.toolbar as string) ?? 'undo redo | blocks | bold italic underline strikethrough | bullist numlist | alignleft aligncenter alignright | link | removeformat | code';
-    const plugins = (userConfig.plugins as string) ?? 'lists link autolink code wordcount';
-    const menubar = (userConfig.menubar as boolean) ?? false;
+    // ── Bezpieczna destrukturyzacja z defaultami (plan §4.2 IRON GUARD Pattern) ──
+    // Priorytet: context.config (nowe) > context.data.config (legacy) > hardcoded defaults
+    const cfg       = context.config ?? {};
+    const legacyCfg = context.data?.config ?? {};
+
+    const height            = cfg.height           ?? (legacyCfg.height as number | undefined)   ?? 500;
+    const width             = cfg.width            ?? 'auto';
+    const resize            = cfg.resize           ?? 'true';
+    const menubar           = cfg.menubar          ?? (legacyCfg.menubar as boolean | undefined)  ?? false;
+    const statusbar         = cfg.statusbar        ?? true;
+    const toolbarSticky     = cfg.toolbarSticky    ?? false;
+    const branding          = cfg.branding         ?? false;
+    const skin              = cfg.skin             ?? 'oxide';
+    const contentCss        = cfg.contentCss       ?? 'default';
+    const contentStyle      = cfg.contentStyle     || DEFAULT_CONTENT_STYLE;
+    const plugins           = cfg.plugins          ?? (legacyCfg.plugins as string | undefined)   ?? DEFAULT_PLUGINS;
+    const toolbar           = cfg.toolbar          ?? (legacyCfg.toolbar as string | undefined)   ?? DEFAULT_TOOLBAR;
+    const toolbarMode       = cfg.toolbarMode      ?? 'floating';
+    const browserSpellcheck = cfg.browserSpellcheck ?? true;
+    const pasteAsText       = cfg.pasteAsText      ?? false;
+    const pasteDataImages   = cfg.pasteDataImages  ?? true;
+    const automaticUploads  = cfg.automaticUploads ?? true;
+
+    // Mapowanie języka platformy → TinyMCE language (plan §4.2)
+    const tinyLang = LANG_MAP[context.lang ?? 'en'] ?? 'en_US';
+
+    // Konwersja resize string → TinyMCE native type
+    const resizeValue: boolean | 'both' =
+        resize === 'false' ? false : resize === 'both' ? 'both' : true;
+
+    // Szerokość: 'auto' → undefined (TinyMCE przyjmuje undefined jako 100%)
+    const widthValue = width === 'auto' ? undefined : width;
 
     const onChangeRef = useRef(context.actions?.onChange);
     const onSaveRef = useRef(context.actions?.onSave);
@@ -125,25 +201,30 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
                     license_key: 'gpl',          // required for TinyMCE 7 Community
                     base_url: baseUrl,            // CRITICAL: skins/themes path on R2
                     suffix: '.min',
+                    language: tinyLang,
+                    // Layout
+                    ...(widthValue !== undefined ? { width: widthValue } : {}),
                     height,
-                    toolbar,
-                    plugins,
+                    resize: resizeValue,
                     menubar,
-                    branding: false,
-                    promotion: false,
-                    statusbar: true,
-                    resize: true,
-                    skin: 'oxide',
-                    content_css: 'default',
-                    content_style: `
-                        body {
-                            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-                            font-size: 13px;
-                            line-height: 1.6;
-                            color: #111827;
-                            margin: 12px;
-                        }
-                    `,
+                    statusbar,
+                    toolbar_sticky: toolbarSticky,
+                    // Branding
+                    branding,
+                    promotion: false,            // zawsze false — Quanti white-label
+                    // Theming
+                    skin,
+                    content_css: contentCss,
+                    content_style: contentStyle,
+                    // Plugins & Toolbar
+                    plugins,
+                    toolbar,
+                    toolbar_mode: toolbarMode,
+                    // Behavior
+                    browser_spellcheck: browserSpellcheck,
+                    paste_as_text: pasteAsText,
+                    paste_data_images: pasteDataImages,
+                    automatic_uploads: automaticUploads,
                     setup: (editor: any) => {
                         editor.on('init', () => {
                             if (destroyed) return;

@@ -132,7 +132,7 @@ export const editor_wysywig_mceDefinition = {
             slot:      'editor_wysywig_mce_main_view',
             component: 'EditorWysywigMceTable',
             priority:  10,
-            description: 'Glowny slot edytora WYSIWYG oparty na TinyMCE. Renderuje pelnoekranowe okno edytora, laduje TinyMCE z CDN, odbiera tresc HTML z context.data.initialContent i wywoluje context.actions.onChange oraz onSave z nowa trescia HTML.',
+            description: 'Główny slot edytora WYSIWYG oparty na TinyMCE. Renderuje edytor z pełną konfiguracją z context.config (skórka, toolbar, pluginy, wymiary, zachowanie wklejania). Odbiera treść HTML z context.data.initialContent i emituje zmiany przez context.actions.onChange i onSave.',
         },
         {
             slot:      'editor_wysywig_mce_detail_panel',
@@ -151,24 +151,245 @@ export const editor_wysywig_mceDefinition = {
 
 export type EditorWysywigMceModuleDefinition = typeof editor_wysywig_mceDefinition;
 
+// ── Enumeracje ────────────────────────────────────────────────────────────────
+const SkinEnum        = z.enum(['oxide', 'oxide-dark']).default('oxide');
+const ContentCssEnum  = z.enum(['default', 'dark', 'document', 'writer']).default('default');
+const ResizeEnum      = z.enum(['false', 'true', 'both']).default('true');
+const ToolbarModeEnum = z.enum(['floating', 'sliding', 'scrolling', 'wrap']).default('floating');
+
 // Module Configuration Schema
 // Defines the structure of settings editable by the tenant admin.
 // Platform Admin UI auto-generates a form from this schema.
+// configSchema keys MUST match configUi keys — enforced by `quanti validate`.
 export const configSchema = z.object({
-    tinyMceApiKey:    z.string().default('7ozvvd4u65sd961sn25w20ttvj1kzkbgyatllnn5xbhoeose'),
-    editorHeight:     z.number().min(200).max(2000).default(500),
-    enableImageTools: z.boolean().default(false),
-    toolbar:          z.string().default('undo redo | blocks | bold italic underline | bullist numlist | link | removeformat'),
-    plugins:          z.string().default('lists link autolink'),
-    menubar:          z.boolean().default(false),
+    // Core & Auth
+    tinyMceApiKey: z.string().default('').describe(
+        'Klucz API TinyMCE. Pozostaw puste dla instalacji GPL z Quanti CDN.'
+    ),
+
+    // UI & Layout
+    width: z.union([z.number().min(200).max(3000), z.literal('auto')]).default('auto').describe(
+        'Szerokość edytora w pikselach lub "auto" dla 100% kontenera.'
+    ),
+    height: z.number().min(200).max(2000).default(500).describe(
+        'Wysokość edytora w pikselach (200–2000).'
+    ),
+    resize: ResizeEnum.describe(
+        'Czy użytkownik może zmieniać rozmiar edytora: false/true (pionowy)/both (obie osie).'
+    ),
+    menubar: z.boolean().default(false).describe(
+        'Pokaż pasek menu (File, Edit, View, Insert, Format, Tools, Table, Help).'
+    ),
+    statusbar: z.boolean().default(true).describe(
+        'Pokaż pasek statusu na dole edytora ze licznikiem słów i rozmiarem.'
+    ),
+    toolbarSticky: z.boolean().default(false).describe(
+        'Przyklejony pasek narzędzi podczas scrollowania długich treści.'
+    ),
+
+    // Branding
+    branding: z.boolean().default(false).describe(
+        'Pokaż logo TinyMCE w pasku statusu (false = ukryj dla white-label).'
+    ),
+
+    // Theming & Styling
+    skin: SkinEnum.describe(
+        'Motyw wizualny edytora: oxide (jasny) lub oxide-dark (ciemny).'
+    ),
+    contentCss: ContentCssEnum.describe(
+        'Styl CSS obszaru edycji: default, dark, document (szerokość ograniczona), writer.'
+    ),
+    contentStyle: z.string().default('').describe(
+        'Niestandardowy CSS wstrzykiwany do iframe edytora. Nadpisuje contentCss dla zaawansowanych stylizacji.'
+    ),
+
+    // Plugins
+    plugins: z.string().default(
+        'advlist autolink lists link image charmap preview anchor ' +
+        'searchreplace visualblocks code fullscreen insertdatetime ' +
+        'media table help wordcount'
+    ).describe(
+        'Lista pluginów TinyMCE oddzielonych spacjami. Dostępne: advlist, autolink, lists, link, image, charmap, preview, anchor, searchreplace, visualblocks, code, fullscreen, insertdatetime, media, table, help, wordcount.'
+    ),
+
+    // Toolbar
+    toolbar: z.string().default(
+        'undo redo | blocks | bold italic underline strikethrough | ' +
+        'alignleft aligncenter alignright alignjustify | ' +
+        'bullist numlist outdent indent | link image | ' +
+        'removeformat | code | fullscreen'
+    ).describe(
+        'Konfiguracja paska narzędzi. Rozdzielaj grupy znakiem |. Użyj false aby ukryć pasek.'
+    ),
+    toolbarMode: ToolbarModeEnum.describe(
+        'Zachowanie paska narzędzi gdy przyciski nie mieszczą się: floating (dropdown), sliding, scrolling, wrap.'
+    ),
+
+    // Behavior
+    browserSpellcheck: z.boolean().default(true).describe(
+        'Włącz sprawdzanie pisowni przez przeglądarkę w obszarze edycji.'
+    ),
+    pasteAsText: z.boolean().default(false).describe(
+        'Wklejaj treść zawsze jako czysty tekst (usuwa formatowanie HTML ze schowka).'
+    ),
+    pasteDataImages: z.boolean().default(true).describe(
+        'Zezwól na wklejanie obrazów jako base64 data URI bezpośrednio do treści.'
+    ),
+    automaticUploads: z.boolean().default(true).describe(
+        'Automatycznie uploaduj obrazy po wklejeniu lub przeciągnięciu (wymaga pluginu image).'
+    ),
 });
 
+export type EditorConfig = z.infer<typeof configSchema>;
+
 // Configuration UI Hints
-export const configUi: Record<string, { label: string; widget: string; showIf?: unknown }> = {
-    tinyMceApiKey:    { label: 'TinyMCE API Key (legacy — not used with Quanti CDN)', widget: 'text' },
-    editorHeight:     { label: 'Editor Height (px)', widget: 'slider' },
-    enableImageTools: { label: 'Enable Image Tools Plugin', widget: 'toggle' },
-    toolbar:          { label: 'Toolbar Buttons', widget: 'text' },
-    plugins:          { label: 'TinyMCE Plugins', widget: 'text' },
-    menubar:          { label: 'Show Menu Bar', widget: 'toggle' },
+// Keys MUST match configSchema keys (16 fields) — enforced by `quanti validate`.
+export const configUi: Record<string, {
+    label: string;
+    widget: string;
+    description?: string;
+    options?: Array<{ value: string; label: string }>;
+    group?: string;
+    min?: number;
+    max?: number;
+}> = {
+    // ── Core & Auth ──────────────────────────────────────────────────────────
+    tinyMceApiKey: {
+        label: 'TinyMCE API Key',
+        widget: 'text',
+        description: 'Opcjonalny klucz komercyjny. Przy korzystaniu z Quanti CDN (GPL) zostaw puste.',
+        group: 'Core',
+    },
+
+    // ── UI & Layout ──────────────────────────────────────────────────────────
+    width: {
+        label: 'Szerokość edytora',
+        widget: 'text',
+        description: 'Liczba (px) lub "auto" dla pełnej szerokości.',
+        group: 'Układ',
+    },
+    height: {
+        label: 'Wysokość edytora (px)',
+        widget: 'number',
+        min: 200,
+        max: 2000,
+        group: 'Układ',
+    },
+    resize: {
+        label: 'Zmiana rozmiaru',
+        widget: 'select',
+        options: [
+            { value: 'false', label: 'Wyłączona' },
+            { value: 'true',  label: 'Pionowa' },
+            { value: 'both',  label: 'Pionowa i pozioma' },
+        ],
+        group: 'Układ',
+    },
+    menubar: {
+        label: 'Pasek menu',
+        widget: 'switch',
+        description: 'Wyświetl pasek z menu File/Edit/View/Insert/Format/Tools/Table/Help.',
+        group: 'Układ',
+    },
+    statusbar: {
+        label: 'Pasek statusu',
+        widget: 'switch',
+        description: 'Wyświetl dolny pasek z licznikiem słów i uchwytem rozmiaru.',
+        group: 'Układ',
+    },
+    toolbarSticky: {
+        label: 'Przyklejony pasek narzędzi',
+        widget: 'switch',
+        description: 'Pasek narzędzi pozostaje widoczny podczas scrollowania.',
+        group: 'Układ',
+    },
+
+    // ── Branding ─────────────────────────────────────────────────────────────
+    branding: {
+        label: 'Logo TinyMCE (branding)',
+        widget: 'switch',
+        description: 'Ukryj/pokaż logo TinyMCE w pasku statusu (zalecane: wyłączone).',
+        group: 'Wygląd',
+    },
+
+    // ── Theming & Styling ────────────────────────────────────────────────────
+    skin: {
+        label: 'Motyw edytora',
+        widget: 'select',
+        options: [
+            { value: 'oxide',      label: 'Oxide (jasny)' },
+            { value: 'oxide-dark', label: 'Oxide Dark (ciemny)' },
+        ],
+        group: 'Wygląd',
+    },
+    contentCss: {
+        label: 'Styl obszaru edycji',
+        widget: 'select',
+        options: [
+            { value: 'default',  label: 'Domyślny' },
+            { value: 'dark',     label: 'Ciemny' },
+            { value: 'document', label: 'Dokument (ograniczona szerokość)' },
+            { value: 'writer',   label: 'Writer (czcionka szeryfowa)' },
+        ],
+        group: 'Wygląd',
+    },
+    contentStyle: {
+        label: 'Niestandardowy CSS (content_style)',
+        widget: 'textarea',
+        description: 'CSS wstrzykiwany do iframe edytora. Np. body { font-family: Georgia; }',
+        group: 'Wygląd',
+    },
+
+    // ── Plugins ──────────────────────────────────────────────────────────────
+    plugins: {
+        label: 'Pluginy TinyMCE',
+        widget: 'textarea',
+        description: 'Lista pluginów oddzielonych spacjami. Zmiana wymaga przeładowania edytora.',
+        group: 'Funkcjonalność',
+    },
+
+    // ── Toolbar ──────────────────────────────────────────────────────────────
+    toolbar: {
+        label: 'Pasek narzędzi',
+        widget: 'textarea',
+        description: 'Konfiguracja przycisków. Grupy rozdzielaj |. Np: bold italic | link | code',
+        group: 'Funkcjonalność',
+    },
+    toolbarMode: {
+        label: 'Tryb paska narzędzi',
+        widget: 'select',
+        options: [
+            { value: 'floating',  label: 'Floating (dropdown)' },
+            { value: 'sliding',   label: 'Sliding (rozwijany)' },
+            { value: 'scrolling', label: 'Scrolling (przewijany)' },
+            { value: 'wrap',      label: 'Wrap (zawijany)' },
+        ],
+        group: 'Funkcjonalność',
+    },
+
+    // ── Behavior ─────────────────────────────────────────────────────────────
+    browserSpellcheck: {
+        label: 'Sprawdzanie pisowni',
+        widget: 'switch',
+        description: 'Podkreślanie błędów przez wbudowaną przeglądarkową korektę ortografii.',
+        group: 'Zachowanie',
+    },
+    pasteAsText: {
+        label: 'Wklejaj jako czysty tekst',
+        widget: 'switch',
+        description: 'Usuwa formatowanie HTML podczas wklejania ze schowka.',
+        group: 'Zachowanie',
+    },
+    pasteDataImages: {
+        label: 'Wklejanie obrazów (base64)',
+        widget: 'switch',
+        description: 'Zezwól na wklejanie obrazów ze schowka bezpośrednio do treści edytora.',
+        group: 'Zachowanie',
+    },
+    automaticUploads: {
+        label: 'Automatyczny upload obrazów',
+        widget: 'switch',
+        description: 'Automatycznie uploaduje obrazy base64 po wklejeniu (wymaga konfiguracji images_upload_url).',
+        group: 'Zachowanie',
+    },
 };

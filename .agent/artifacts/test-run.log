@@ -1,4 +1,4 @@
-# Test Run — 2026-03-26T19:13:10.079Z
+# Test Run — 2026-03-27T22:08:04.301Z
 
 > quanti-module-editor-wysywig-mce@1.0.1 test
 > vitest run
@@ -6,7 +6,7 @@
 
  RUN  v3.2.4 /Users/piotr/internet-web/Universal_media/Quanti/Quanti-CLI/quanti-module-editor-wysywig-mce
 
- ✓ src/worker.test.ts (3 tests) 125ms
+ ✓ src/worker.test.ts (3 tests) 69ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render preview container when content is provided
 🔥 SHELL PRZESYŁA DO PODGLĄDU: {
   projectId: [33m42[39m,
@@ -31,10 +31,10 @@ stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceD
   data: { content: [32m''[39m }
 }
 
+ ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 60ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render empty state when context.data is undefined
 🔥 SHELL PRZESYŁA DO PODGLĄDU: { projectId: [33m42[39m, instanceKey: [32m'default'[39m, lang: [32m'en'[39m, data: [90mundefined[39m }
 
- ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 70ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render without crash when projectId is 0
 🔥 SHELL PRZESYŁA DO PODGLĄDU: {
   projectId: [33m0[39m,
@@ -43,7 +43,6 @@ stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceD
   data: { content: [32m'<p>Hello <strong>world</strong></p>'[39m }
 }
 
- ✓ src/components/EditorWysywigMceTable.test.tsx (6 tests) 105ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should display custom label when context.data.label is provided
 🔥 SHELL PRZESYŁA DO PODGLĄDU: {
   projectId: [33m42[39m,
@@ -52,9 +51,10 @@ stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceD
   data: { content: [32m'<p>Test</p>'[39m, label: [32m'My Custom Label'[39m }
 }
 
- ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 140ms
+ ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 105ms
+ ✓ src/components/EditorWysywigMceTable.test.tsx (17 tests) 222ms
 
  Test Files  4 passed (4)
-      Tests  16 passed (16)
-   Start at  20:13:06
-   Duration  2.94s (transform 144ms, setup 0ms, collect 1.46s, tests 440ms, environment 4.36s, prepare 916ms)
+      Tests  27 passed (27)
+   Start at  23:08:00
+   Duration  3.17s (transform 258ms, setup 0ms, collect 1.28s, tests 456ms, environment 4.07s, prepare 1.24s)
