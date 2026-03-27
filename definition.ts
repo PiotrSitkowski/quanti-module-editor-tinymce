@@ -244,159 +244,157 @@ export const configSchema = z.object({
 
 export type EditorConfig = z.infer<typeof configSchema>;
 
-// I18n string — AutoForm reads this and picks the correct language at render time.
-type I18nString = { en: string; pl: string };
-
 // Configuration UI Hints
 // Keys MUST match configSchema keys (16 fields) — enforced by `quanti validate`.
-// All user-visible strings use { en, pl } objects so AutoForm can switch language
-// based on the admin's platform locale setting.
+// Labels/descriptions are English strings — Kernel manifest schema accepts only string type.
+// Platform i18n note: per manifest validator contract, configUi fields are flat strings.
+// Module UI strings (component layer) remain fully localized via src/locales/*.ts.
 export const configUi: Record<string, {
-    label: I18nString;
+    label: string;
     widget: string;
-    description?: I18nString;
-    options?: Array<{ value: string; label: I18nString }>;
-    group?: I18nString;
+    description?: string;
+    options?: Array<{ value: string; label: string }>;
+    group?: string;
     min?: number;
     max?: number;
 }> = {
     // ── Core & Auth ──────────────────────────────────────────────────────────
     tinyMceApiKey: {
-        label:       { en: 'TinyMCE API Key',   pl: 'Klucz API TinyMCE' },
+        label:       'TinyMCE API Key',
         widget:      'text',
-        description: { en: 'Optional commercial key. Leave empty when using Quanti CDN (GPL).', pl: 'Opcjonalny klucz komercyjny. Przy korzystaniu z Quanti CDN (GPL) zostaw puste.' },
-        group:       { en: 'Core', pl: 'Core' },
+        description: 'Optional commercial key. Leave empty when using Quanti CDN (GPL).',
+        group:       'Core',
     },
 
     // ── UI & Layout ──────────────────────────────────────────────────────────
     width: {
-        label:       { en: 'Editor width',    pl: 'Szerokość edytora' },
+        label:       'Editor width',
         widget:      'text',
-        description: { en: 'Number (px) or "auto" for full container width.', pl: 'Liczba (px) lub "auto" dla pełnej szerokości.' },
-        group:       { en: 'Layout', pl: 'Układ' },
+        description: 'Number (px) or "auto" for full container width.',
+        group:       'Layout',
     },
     height: {
-        label:  { en: 'Editor height (px)', pl: 'Wysokość edytora (px)' },
+        label:  'Editor height (px)',
         widget: 'number',
         min:    200,
         max:    2000,
-        group:  { en: 'Layout', pl: 'Układ' },
+        group:  'Layout',
     },
     resize: {
-        label:   { en: 'Resize handle',   pl: 'Zmiana rozmiaru' },
+        label:   'Resize handle',
         widget:  'select',
         options: [
-            { value: 'false', label: { en: 'Disabled',              pl: 'Wyłączona' } },
-            { value: 'true',  label: { en: 'Vertical',              pl: 'Pionowa' } },
-            { value: 'both',  label: { en: 'Vertical & horizontal', pl: 'Pionowa i pozioma' } },
+            { value: 'false', label: 'Disabled' },
+            { value: 'true',  label: 'Vertical' },
+            { value: 'both',  label: 'Vertical & horizontal' },
         ],
-        group: { en: 'Layout', pl: 'Układ' },
+        group: 'Layout',
     },
     menubar: {
-        label:       { en: 'Menu bar',    pl: 'Pasek menu' },
+        label:       'Menu bar',
         widget:      'switch',
-        description: { en: 'Show the menu bar (File / Edit / View / Insert / Format / Tools / Table / Help).', pl: 'Wyświetl pasek z menu File/Edit/View/Insert/Format/Tools/Table/Help.' },
-        group:       { en: 'Layout', pl: 'Układ' },
+        description: 'Show the menu bar (File / Edit / View / Insert / Format / Tools / Table / Help).',
+        group:       'Layout',
     },
     statusbar: {
-        label:       { en: 'Status bar',  pl: 'Pasek statusu' },
+        label:       'Status bar',
         widget:      'switch',
-        description: { en: 'Show the bottom status bar with word counter and resize handle.', pl: 'Wyświetl dolny pasek z licznikiem słów i uchwytem rozmiaru.' },
-        group:       { en: 'Layout', pl: 'Układ' },
+        description: 'Show the bottom status bar with word counter and resize handle.',
+        group:       'Layout',
     },
     toolbarSticky: {
-        label:       { en: 'Sticky toolbar', pl: 'Przyklejony pasek narzędzi' },
+        label:       'Sticky toolbar',
         widget:      'switch',
-        description: { en: 'Toolbar stays visible while scrolling long content.', pl: 'Pasek narzędzi pozostaje widoczny podczas scrollowania.' },
-        group:       { en: 'Layout', pl: 'Układ' },
+        description: 'Toolbar stays visible while scrolling long content.',
+        group:       'Layout',
     },
 
     // ── Branding ─────────────────────────────────────────────────────────────
     branding: {
-        label:       { en: 'TinyMCE branding logo', pl: 'Logo TinyMCE (branding)' },
+        label:       'TinyMCE branding logo',
         widget:      'switch',
-        description: { en: 'Show/hide the TinyMCE logo in the status bar (recommended: off for white-label).', pl: 'Ukryj/pokaż logo TinyMCE w pasku statusu (zalecane: wyłączone).' },
-        group:       { en: 'Appearance', pl: 'Wygląd' },
+        description: 'Show/hide the TinyMCE logo in the status bar (recommended: off for white-label).',
+        group:       'Appearance',
     },
 
     // ── Theming & Styling ────────────────────────────────────────────────────
     skin: {
-        label:   { en: 'Editor skin',  pl: 'Motyw edytora' },
+        label:   'Editor skin',
         widget:  'select',
         options: [
-            { value: 'oxide',      label: { en: 'Oxide (light)', pl: 'Oxide (jasny)' } },
-            { value: 'oxide-dark', label: { en: 'Oxide Dark',    pl: 'Oxide Dark (ciemny)' } },
+            { value: 'oxide',      label: 'Oxide (light)' },
+            { value: 'oxide-dark', label: 'Oxide Dark' },
         ],
-        group: { en: 'Appearance', pl: 'Wygląd' },
+        group: 'Appearance',
     },
     contentCss: {
-        label:   { en: 'Content area style', pl: 'Styl obszaru edycji' },
+        label:   'Content area style',
         widget:  'select',
         options: [
-            { value: 'default',  label: { en: 'Default',                   pl: 'Domyślny' } },
-            { value: 'dark',     label: { en: 'Dark',                      pl: 'Ciemny' } },
-            { value: 'document', label: { en: 'Document (limited width)',   pl: 'Dokument (ograniczona szerokość)' } },
-            { value: 'writer',   label: { en: 'Writer (serif font)',        pl: 'Writer (czcionka szeryfowa)' } },
+            { value: 'default',  label: 'Default' },
+            { value: 'dark',     label: 'Dark' },
+            { value: 'document', label: 'Document (limited width)' },
+            { value: 'writer',   label: 'Writer (serif font)' },
         ],
-        group: { en: 'Appearance', pl: 'Wygląd' },
+        group: 'Appearance',
     },
     contentStyle: {
-        label:       { en: 'Custom CSS (content_style)', pl: 'Niestandardowy CSS (content_style)' },
+        label:       'Custom CSS (content_style)',
         widget:      'textarea',
-        description: { en: 'CSS injected into the editor iframe. E.g. body { font-family: Georgia; }', pl: 'CSS wstrzykiwany do iframe edytora. Np. body { font-family: Georgia; }' },
-        group:       { en: 'Appearance', pl: 'Wygląd' },
+        description: 'CSS injected into the editor iframe. E.g. body { font-family: Georgia; }',
+        group:       'Appearance',
     },
 
     // ── Plugins ──────────────────────────────────────────────────────────────
     plugins: {
-        label:       { en: 'TinyMCE plugins', pl: 'Pluginy TinyMCE' },
+        label:       'TinyMCE plugins',
         widget:      'textarea',
-        description: { en: 'Space-separated plugin list. Changes require an editor reload.', pl: 'Lista pluginów oddzielonych spacjami. Zmiana wymaga przeładowania edytora.' },
-        group:       { en: 'Functionality', pl: 'Funkcjonalność' },
+        description: 'Space-separated plugin list. Changes require an editor reload.',
+        group:       'Functionality',
     },
 
     // ── Toolbar ──────────────────────────────────────────────────────────────
     toolbar: {
-        label:       { en: 'Toolbar buttons', pl: 'Pasek narzędzi' },
+        label:       'Toolbar buttons',
         widget:      'textarea',
-        description: { en: 'Button configuration. Separate groups with |. E.g. bold italic | link | code', pl: 'Konfiguracja przycisków. Grupy rozdzielaj |. Np: bold italic | link | code' },
-        group:       { en: 'Functionality', pl: 'Funkcjonalność' },
+        description: 'Button configuration. Separate groups with |. E.g. bold italic | link | code',
+        group:       'Functionality',
     },
     toolbarMode: {
-        label:   { en: 'Toolbar overflow mode', pl: 'Tryb paska narzędzi' },
+        label:   'Toolbar overflow mode',
         widget:  'select',
         options: [
-            { value: 'floating',  label: { en: 'Floating (dropdown)',  pl: 'Floating (dropdown)' } },
-            { value: 'sliding',   label: { en: 'Sliding (expandable)', pl: 'Sliding (rozwijany)' } },
-            { value: 'scrolling', label: { en: 'Scrolling',            pl: 'Scrolling (przewijany)' } },
-            { value: 'wrap',      label: { en: 'Wrap (multiline)',      pl: 'Wrap (zawijany)' } },
+            { value: 'floating',  label: 'Floating (dropdown)' },
+            { value: 'sliding',   label: 'Sliding (expandable)' },
+            { value: 'scrolling', label: 'Scrolling' },
+            { value: 'wrap',      label: 'Wrap (multiline)' },
         ],
-        group: { en: 'Functionality', pl: 'Funkcjonalność' },
+        group: 'Functionality',
     },
 
     // ── Behavior ─────────────────────────────────────────────────────────────
     browserSpellcheck: {
-        label:       { en: 'Browser spell check',       pl: 'Sprawdzanie pisowni' },
+        label:       'Browser spell check',
         widget:      'switch',
-        description: { en: 'Underline misspelled words using the browser built-in spell checker.', pl: 'Podkreślanie błędów przez wbudowaną przeglądarkową korektę ortografii.' },
-        group:       { en: 'Behavior', pl: 'Zachowanie' },
+        description: 'Underline misspelled words using the browser built-in spell checker.',
+        group:       'Behavior',
     },
     pasteAsText: {
-        label:       { en: 'Paste as plain text',  pl: 'Wklejaj jako czysty tekst' },
+        label:       'Paste as plain text',
         widget:      'switch',
-        description: { en: 'Strip HTML formatting when pasting from clipboard.', pl: 'Usuwa formatowanie HTML podczas wklejania ze schowka.' },
-        group:       { en: 'Behavior', pl: 'Zachowanie' },
+        description: 'Strip HTML formatting when pasting from clipboard.',
+        group:       'Behavior',
     },
     pasteDataImages: {
-        label:       { en: 'Paste images (base64)',  pl: 'Wklejanie obrazów (base64)' },
+        label:       'Paste images (base64)',
         widget:      'switch',
-        description: { en: 'Allow pasting images from clipboard directly into the editor content.', pl: 'Zezwól na wklejanie obrazów ze schowka bezpośrednio do treści edytora.' },
-        group:       { en: 'Behavior', pl: 'Zachowanie' },
+        description: 'Allow pasting images from clipboard directly into the editor content.',
+        group:       'Behavior',
     },
     automaticUploads: {
-        label:       { en: 'Automatic image upload',  pl: 'Automatyczny upload obrazów' },
+        label:       'Automatic image upload',
         widget:      'switch',
-        description: { en: 'Automatically upload base64 images after paste (requires images_upload_url).', pl: 'Automatycznie uploaduje obrazy base64 po wklejeniu (wymaga konfiguracji images_upload_url).' },
-        group:       { en: 'Behavior', pl: 'Zachowanie' },
+        description: 'Automatically upload base64 images after paste (requires images_upload_url).',
+        group:       'Behavior',
     },
 };
