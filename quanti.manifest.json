@@ -4,7 +4,7 @@
   "module": {
     "name": "quanti-module-editor-wysywig-mce",
     "displayName": "Editor Wysywig Mce",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "description": "Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides"
   },
   "fleet": {
@@ -19,7 +19,7 @@
     "outputFile": "dist/worker.js",
     "bundleHash": "sha256:62062b65e3b5252212dabaabbb7e614e3fd40ee1119fef5293fe937543c5bcfc",
     "bundleSize": 3260,
-    "builtAt": "2026-05-05T09:33:21.574Z"
+    "builtAt": "2026-05-05T09:37:39.416Z"
   },
   "bindings": {
     "services": [

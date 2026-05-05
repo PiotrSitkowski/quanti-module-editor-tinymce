@@ -18,7 +18,7 @@ export const editor_wysywig_mceDefinition = {
     name:          'Editor Wysywig Mce',
     serviceType:   'content',
     schemaVersion: 1,
-    version:       '1.0.2',
+    version:       '1.0.3',
     icon:          'Box',
 
     description: `Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides
@@ -29,7 +29,7 @@ export const editor_wysywig_mceDefinition = {
         the internal Quanti CDN bucket (cdn.quanti-system.cloud) via src/lib/tinyMceLoader.ts, ensuring
         zero external network dependencies and full CSP compliance.`,
 
-    slots:         ['editor_wysywig_mce_main_view', 'editor_wysywig_mce_detail_panel', 'dashboard_widget'],
+    slots:         ['editor_wysywig_mce_main_view', 'editor_wysywig_mce_detail_panel'],
     permissions:   [],
     behaviorRules: [],
 
