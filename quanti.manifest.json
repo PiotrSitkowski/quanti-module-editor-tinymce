@@ -4,7 +4,7 @@
   "module": {
     "name": "quanti-module-editor-wysywig-mce",
     "displayName": "Editor Wysywig Mce",
-    "version": "1.0.0",
+    "version": "1.0.2",
     "description": "Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides"
   },
   "fleet": {
@@ -17,9 +17,9 @@
   "build": {
     "entryPoint": "src/worker.ts",
     "outputFile": "dist/worker.js",
-    "bundleHash": "sha256:dccd8333d925ba99e80049cb5b32cd1fd87e5a80eb345e01028ba0b333ce843d",
-    "bundleSize": 3240,
-    "builtAt": "2026-03-27T22:08:05.036Z"
+    "bundleHash": "sha256:62062b65e3b5252212dabaabbb7e614e3fd40ee1119fef5293fe937543c5bcfc",
+    "bundleSize": 3260,
+    "builtAt": "2026-05-05T09:33:21.574Z"
   },
   "bindings": {
     "services": [
@@ -46,7 +46,7 @@
   },
   "semantic_knowledge": {
     "overview": "Reusable WYSIWYG editor slot module powered by **TinyMCE Cloud**.\nThis module does **not** manage its own database. It acts as a pure UI slot\nthat other modules (posts, pages, emails, articles) embed to enable formatted HTML authoring.\n\n**Key concepts:**\n- The editor receives initial HTML via `props.context.data.initialContent`\n- Content changes are emitted back via `props.context.actions.onChange(html: string)`\n- Save action is emitted via `props.context.actions.onSave(html: string)`\n- TinyMCE jest ładowany z **Quanti CDN (R2)** via `src/lib/tinyMceLoader.ts`\n  (URL: `https://cdn.quanti-system.cloud/libs/tinymce/tinymce.min.js`)",
-    "fileMap": "| Plik | Logika Biznesowa |\n|------|-----------------||\n| src/worker.ts | WorkerEntrypoint stub -- no active DB logic; contract validation only |\n| schema.ts | Drizzle ORM schema stub (mandatory columns only -- no module-specific columns) |\n| contract.ts | RPC contract -- Zod schemas for tenant-isolated payload validation |\n| definition.ts | Module manifest -- configSchema (tinyMceApiKey, editorHeight, plugins, toolbar) |\n| src/hooks/useModuleTranslation.ts | i18n hook -- returns EN/PL translations for editor labels |\n| src/locales/en.ts | English translations (source of truth) |\n| src/locales/pl.ts | Polish translations (must mirror en.ts keys) |\n| src/locales/index.ts | Lazy-loaded locale barrel export |\n| src/components/EditorWysywigMceTable.tsx | Main WYSIWYG editor slot: loads TinyMCE from CDN, handles onChange/onSave/onCancel callbacks |\n| src/components/EditorWysywigMceDetailPanel.tsx | Read-only HTML preview panel from context.data.content |\n| src/components/EditorWysywigMceDashboardWidget.tsx | Dashboard widget: shows TinyMCE config status and API key state |\n| src/components/index.ts | Barrel export for all UI components |\n| src/index.ts | MFE entry barrel -- exports components for R2 bundle |\n| src/workers.ts | CQRS Queue Consumer -- processes async events (stub) |\n| src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |\n| .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |",
+    "fileMap": "| Plik | Logika Biznesowa |\n|------|-----------------||\n| src/worker.ts | WorkerEntrypoint stub -- no active DB logic; contract validation only |\n| schema.ts | Drizzle ORM schema stub (mandatory columns only -- no module-specific columns) |\n| contract.ts | RPC contract -- Zod schemas for tenant-isolated payload validation |\n| definition.ts | Module manifest -- configSchema (tinyMceApiKey, editorHeight, plugins, toolbar) |\n| src/hooks/useModuleTranslation.ts | i18n hook -- returns EN/PL translations for editor labels |\n| src/locales/en.ts | English translations (source of truth) |\n| src/locales/pl.ts | Polish translations (must mirror en.ts keys) |\n| src/locales/index.ts | Lazy-loaded locale barrel export |\n| src/components/EditorWysywigMceTable.tsx | Main WYSIWYG editor slot: loads TinyMCE from CDN, handles onChange/onSave/onCancel callbacks |\n| src/components/EditorWysywigMceDetailPanel.tsx | Read-only HTML preview panel from context.data.content |\n| src/components/EditorWysywigMceDashboardWidget.tsx | Dashboard widget: shows TinyMCE config status and API key state |\n| src/components/PostEditorSlot.tsx | Producer dla slotu `post_editor` modułu `posts`. Adapter TinyMCE mapujący context.value/onChange (kontrakt Posts) na lifecycle edytora; seed + reconcile przy zmianie postId; a11y id=\"posts-editor-content\". Nie emituje posts:editor:* eventów, nie woła context.rpc — zapis po stronie hosta. |\n| src/components/index.ts | Barrel export for all UI components |\n| src/index.ts | MFE entry barrel -- exports components for R2 bundle |\n| src/workers.ts | CQRS Queue Consumer -- processes async events (stub) |\n| src/test-utils/cloudflare-workers-stub.ts | Vitest stub for `cloudflare:workers` virtual module -- provides minimal WorkerEntrypoint base class so unit tests can import Worker code without the CF runtime |\n| src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |\n| src/lib/validators/module-settings.schema.ts | Auto-Default Injection & Strict Coercion — sanitizes empty strings from AutoForm, coerces numeric strings, injects configSchema defaults for missing fields, returns typed ValidationResult or throws SettingsValidationError (422) |\n| .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |",
     "rulesAndConstraints": "- **No direct database writes from UI components** -- this module is a pure UI primitive\n- **TinyMCE API Key** is tenant-configurable via `configSchema.tinyMceApiKey` (Admin UI)\n- **HTML sanitization** is the responsibility of the **host module** (posts, pages, etc.)\n  before storing content in their DB or before passing it to the detail panel\n- Never call `fetch()` inside any component -- all communication via `context.api` or `context.actions`\n- TinyMCE ładowany z **Quanti CDN (R2)** via `src/lib/tinyMceLoader.ts` — **zero połączeń z zewnętrznymi sieciami**\n- lib-Isolation Rule: żaden komponent UI nie może inline wstrzykiwać `<script>` — wyłącznie przez `loadTinyMceFromQuantiCdn()`",
     "orchestrationGuide": "**Triggered by:**\n- Host module renders `editor_wysywig_mce_main_view` slot\n- Host module renders `editor_wysywig_mce_detail_panel` slot (preview)\n- Dashboard renders `dashboard_widget` slot\n\n**Emits (via context.actions):**\n- `context.actions.onChange(html: string)` -- on every keystroke / content change\n- `context.actions.onSave(html: string)` -- on Save button click\n- `context.actions.onCancel()` -- on Cancel button click\n\n**Composes with:**\n- `posts` module -- article body editing\n- `pages` module -- static page content editing\n- `emails` module -- email template editing"
   },
@@ -67,12 +67,16 @@
           "anyOf": [
             {
               "type": "number",
-              "minimum": 200,
+              "minimum": 0,
               "maximum": 3000
             },
             {
               "type": "string",
               "const": "auto"
+            },
+            {
+              "type": "string",
+              "const": ""
             }
           ],
           "default": "auto",
@@ -80,17 +84,25 @@
         },
         "height": {
           "type": "number",
-          "minimum": 200,
+          "minimum": 0,
           "maximum": 2000,
           "default": 500,
           "description": "Wysokość edytora w pikselach (200–2000)."
         },
         "resize": {
-          "type": "string",
-          "enum": [
-            "false",
-            "true",
-            "both"
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "false",
+                "true",
+                "both"
+              ]
+            },
+            {
+              "type": "string",
+              "const": ""
+            }
           ],
           "default": "true",
           "description": "Czy użytkownik może zmieniać rozmiar edytora: false/true (pionowy)/both (obie osie)."
@@ -116,21 +128,37 @@
           "description": "Pokaż logo TinyMCE w pasku statusu (false = ukryj dla white-label)."
         },
         "skin": {
-          "type": "string",
-          "enum": [
-            "oxide",
-            "oxide-dark"
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "oxide",
+                "oxide-dark"
+              ]
+            },
+            {
+              "type": "string",
+              "const": ""
+            }
           ],
           "default": "oxide",
           "description": "Motyw wizualny edytora: oxide (jasny) lub oxide-dark (ciemny)."
         },
         "contentCss": {
-          "type": "string",
-          "enum": [
-            "default",
-            "dark",
-            "document",
-            "writer"
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "default",
+                "dark",
+                "document",
+                "writer"
+              ]
+            },
+            {
+              "type": "string",
+              "const": ""
+            }
           ],
           "default": "default",
           "description": "Styl CSS obszaru edycji: default, dark, document (szerokość ograniczona), writer."
@@ -151,12 +179,20 @@
           "description": "Konfiguracja paska narzędzi. Rozdzielaj grupy znakiem |. Użyj false aby ukryć pasek."
         },
         "toolbarMode": {
-          "type": "string",
-          "enum": [
-            "floating",
-            "sliding",
-            "scrolling",
-            "wrap"
+          "anyOf": [
+            {
+              "type": "string",
+              "enum": [
+                "floating",
+                "sliding",
+                "scrolling",
+                "wrap"
+              ]
+            },
+            {
+              "type": "string",
+              "const": ""
+            }
           ],
           "default": "floating",
           "description": "Zachowanie paska narzędzi gdy przyciski nie mieszczą się: floating (dropdown), sliding, scrolling, wrap."
@@ -189,123 +225,123 @@
       "tinyMceApiKey": {
         "label": "TinyMCE API Key",
         "widget": "text",
-        "description": "Opcjonalny klucz komercyjny. Przy korzystaniu z Quanti CDN (GPL) zostaw puste.",
+        "description": "Optional commercial key. Leave empty when using Quanti CDN (GPL).",
         "group": "Core"
       },
       "width": {
-        "label": "Szerokość edytora",
+        "label": "Editor width",
         "widget": "text",
-        "description": "Liczba (px) lub \"auto\" dla pełnej szerokości.",
-        "group": "Układ"
+        "description": "Number (px) or \"auto\" for full container width.",
+        "group": "Layout"
       },
       "height": {
-        "label": "Wysokość edytora (px)",
+        "label": "Editor height (px)",
         "widget": "number",
         "min": 200,
         "max": 2000,
-        "group": "Układ"
+        "group": "Layout"
       },
       "resize": {
-        "label": "Zmiana rozmiaru",
+        "label": "Resize handle",
         "widget": "select",
         "options": [
           {
             "value": "false",
-            "label": "Wyłączona"
+            "label": "Disabled"
           },
           {
             "value": "true",
-            "label": "Pionowa"
+            "label": "Vertical"
           },
           {
             "value": "both",
-            "label": "Pionowa i pozioma"
+            "label": "Vertical & horizontal"
           }
         ],
-        "group": "Układ"
+        "group": "Layout"
       },
       "menubar": {
-        "label": "Pasek menu",
+        "label": "Menu bar",
         "widget": "switch",
-        "description": "Wyświetl pasek z menu File/Edit/View/Insert/Format/Tools/Table/Help.",
-        "group": "Układ"
+        "description": "Show the menu bar (File / Edit / View / Insert / Format / Tools / Table / Help).",
+        "group": "Layout"
       },
       "statusbar": {
-        "label": "Pasek statusu",
+        "label": "Status bar",
         "widget": "switch",
-        "description": "Wyświetl dolny pasek z licznikiem słów i uchwytem rozmiaru.",
-        "group": "Układ"
+        "description": "Show the bottom status bar with word counter and resize handle.",
+        "group": "Layout"
       },
       "toolbarSticky": {
-        "label": "Przyklejony pasek narzędzi",
+        "label": "Sticky toolbar",
         "widget": "switch",
-        "description": "Pasek narzędzi pozostaje widoczny podczas scrollowania.",
-        "group": "Układ"
+        "description": "Toolbar stays visible while scrolling long content.",
+        "group": "Layout"
       },
       "branding": {
-        "label": "Logo TinyMCE (branding)",
+        "label": "TinyMCE branding logo",
         "widget": "switch",
-        "description": "Ukryj/pokaż logo TinyMCE w pasku statusu (zalecane: wyłączone).",
-        "group": "Wygląd"
+        "description": "Show/hide the TinyMCE logo in the status bar (recommended: off for white-label).",
+        "group": "Appearance"
       },
       "skin": {
-        "label": "Motyw edytora",
+        "label": "Editor skin",
         "widget": "select",
         "options": [
           {
             "value": "oxide",
-            "label": "Oxide (jasny)"
+            "label": "Oxide (light)"
           },
           {
             "value": "oxide-dark",
-            "label": "Oxide Dark (ciemny)"
+            "label": "Oxide Dark"
           }
         ],
-        "group": "Wygląd"
+        "group": "Appearance"
       },
       "contentCss": {
-        "label": "Styl obszaru edycji",
+        "label": "Content area style",
         "widget": "select",
         "options": [
           {
             "value": "default",
-            "label": "Domyślny"
+            "label": "Default"
           },
           {
             "value": "dark",
-            "label": "Ciemny"
+            "label": "Dark"
           },
           {
             "value": "document",
-            "label": "Dokument (ograniczona szerokość)"
+            "label": "Document (limited width)"
           },
           {
             "value": "writer",
-            "label": "Writer (czcionka szeryfowa)"
+            "label": "Writer (serif font)"
           }
         ],
-        "group": "Wygląd"
+        "group": "Appearance"
       },
       "contentStyle": {
-        "label": "Niestandardowy CSS (content_style)",
+        "label": "Custom CSS (content_style)",
         "widget": "textarea",
-        "description": "CSS wstrzykiwany do iframe edytora. Np. body { font-family: Georgia; }",
-        "group": "Wygląd"
+        "description": "CSS injected into the editor iframe. E.g. body { font-family: Georgia; }",
+        "group": "Appearance"
       },
       "plugins": {
-        "label": "Pluginy TinyMCE",
+        "label": "TinyMCE plugins",
         "widget": "textarea",
-        "description": "Lista pluginów oddzielonych spacjami. Zmiana wymaga przeładowania edytora.",
-        "group": "Funkcjonalność"
+        "description": "Space-separated plugin list. Changes require an editor reload.",
+        "group": "Functionality"
       },
       "toolbar": {
-        "label": "Pasek narzędzi",
+        "label": "Toolbar buttons",
         "widget": "textarea",
-        "description": "Konfiguracja przycisków. Grupy rozdzielaj |. Np: bold italic | link | code",
-        "group": "Funkcjonalność"
+        "description": "Button configuration. Separate groups with |. E.g. bold italic | link | code",
+        "group": "Functionality"
       },
       "toolbarMode": {
-        "label": "Tryb paska narzędzi",
+        "label": "Toolbar overflow mode",
         "widget": "select",
         "options": [
           {
@@ -314,42 +350,42 @@
           },
           {
             "value": "sliding",
-            "label": "Sliding (rozwijany)"
+            "label": "Sliding (expandable)"
           },
           {
             "value": "scrolling",
-            "label": "Scrolling (przewijany)"
+            "label": "Scrolling"
           },
           {
             "value": "wrap",
-            "label": "Wrap (zawijany)"
+            "label": "Wrap (multiline)"
           }
         ],
-        "group": "Funkcjonalność"
+        "group": "Functionality"
       },
       "browserSpellcheck": {
-        "label": "Sprawdzanie pisowni",
+        "label": "Browser spell check",
         "widget": "switch",
-        "description": "Podkreślanie błędów przez wbudowaną przeglądarkową korektę ortografii.",
-        "group": "Zachowanie"
+        "description": "Underline misspelled words using the browser built-in spell checker.",
+        "group": "Behavior"
       },
       "pasteAsText": {
-        "label": "Wklejaj jako czysty tekst",
+        "label": "Paste as plain text",
         "widget": "switch",
-        "description": "Usuwa formatowanie HTML podczas wklejania ze schowka.",
-        "group": "Zachowanie"
+        "description": "Strip HTML formatting when pasting from clipboard.",
+        "group": "Behavior"
       },
       "pasteDataImages": {
-        "label": "Wklejanie obrazów (base64)",
+        "label": "Paste images (base64)",
         "widget": "switch",
-        "description": "Zezwól na wklejanie obrazów ze schowka bezpośrednio do treści edytora.",
-        "group": "Zachowanie"
+        "description": "Allow pasting images from clipboard directly into the editor content.",
+        "group": "Behavior"
       },
       "automaticUploads": {
-        "label": "Automatyczny upload obrazów",
+        "label": "Automatic image upload",
         "widget": "switch",
-        "description": "Automatycznie uploaduje obrazy base64 po wklejeniu (wymaga konfiguracji images_upload_url).",
-        "group": "Zachowanie"
+        "description": "Automatically upload base64 images after paste (requires images_upload_url).",
+        "group": "Behavior"
       }
     }
   },
@@ -367,10 +403,10 @@
       "description": "Panel podgladu tresci HTML wyprodukowanej przez edytor. Wyswietla bezpieczny rendering HTML z context.data.content w trybie tylko do odczytu, umozliwiajac modulom-hostom podglad zapisanej tresci bez aktywnego edytora TinyMCE."
     },
     {
-      "slot": "dashboard_widget",
-      "component": "EditorWysywigMceDashboardWidget",
+      "slot": "post_editor",
+      "component": "PostEditorSlot",
       "priority": 10,
-      "description": "Widget dashboardu informujacy o dostepnosci edytora WYSIWYG TinyMCE w platformie. Wyswietla status konfiguracji klucza API oraz skrot do otwarcia edytora dla administratorow i redaktorow tresci platformy Quanti."
+      "description": "Producent slotu post_editor hostowanego przez modul posts — zastepuje fallback <textarea> pelnoprawnym edytorem TinyMCE. Czyta seed z context.value, reconciliuje przy zmianie postId (nawigacja miedzy postami), woła context.onChange(text) na kazda edycje aby host wykryl dirty-state. Nie emituje posts:editor:* eventow ani nie wola context.rpc — zapis i akcje bottom_bar nalezace do PostsEditorActions. a11y: root edytora oznaczony id=\"posts-editor-content\" dla powiazania z hostowym <Label>."
     }
   ]
 }

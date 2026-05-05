@@ -1,6 +1,6 @@
 {
   "name": "quanti-module-editor-wysywig-mce",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "scripts": {

@@ -18,7 +18,7 @@ export const editor_wysywig_mceDefinition = {
     name:          'Editor Wysywig Mce',
     serviceType:   'content',
     schemaVersion: 1,
-    version:       '1.0.0',
+    version:       '1.0.2',
     icon:          'Box',
 
     description: `Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides
@@ -141,10 +141,10 @@ export const editor_wysywig_mceDefinition = {
             description: 'Panel podgladu tresci HTML wyprodukowanej przez edytor. Wyswietla bezpieczny rendering HTML z context.data.content w trybie tylko do odczytu, umozliwiajac modulom-hostom podglad zapisanej tresci bez aktywnego edytora TinyMCE.',
         },
         {
-            slot:      'dashboard_widget',
-            component: 'EditorWysywigMceDashboardWidget',
+            slot:      'post_editor',
+            component: 'PostEditorSlot',
             priority:  10,
-            description: 'Widget dashboardu informujacy o dostepnosci edytora WYSIWYG TinyMCE w platformie. Wyswietla status konfiguracji klucza API oraz skrot do otwarcia edytora dla administratorow i redaktorow tresci platformy Quanti.',
+            description: 'Producent slotu post_editor hostowanego przez modul posts — zastepuje fallback <textarea> pelnoprawnym edytorem TinyMCE. Czyta seed z context.value, reconciliuje przy zmianie postId (nawigacja miedzy postami), woła context.onChange(text) na kazda edycje aby host wykryl dirty-state. Nie emituje posts:editor:* eventow ani nie wola context.rpc — zapis i akcje bottom_bar nalezace do PostsEditorActions. a11y: root edytora oznaczony id="posts-editor-content" dla powiazania z hostowym <Label>.',
         },
     ],
 } as const;
@@ -152,10 +152,14 @@ export const editor_wysywig_mceDefinition = {
 export type EditorWysywigMceModuleDefinition = typeof editor_wysywig_mceDefinition;
 
 // ── Enumeracje ────────────────────────────────────────────────────────────────
-const SkinEnum        = z.enum(['oxide', 'oxide-dark']).default('oxide');
-const ContentCssEnum  = z.enum(['default', 'dark', 'document', 'writer']).default('default');
-const ResizeEnum      = z.enum(['false', 'true', 'both']).default('true');
-const ToolbarModeEnum = z.enum(['floating', 'sliding', 'scrolling', 'wrap']).default('floating');
+// z.union([z.enum([...valid...]), z.literal('')]) zamiast z.enum([..., ''])
+// → manifest: anyOf [{enum: [valid]}, {const: ""}]
+// → Kernel akceptuje "" przez gałąź {const: ""}
+// → AutoForm generuje opcje SELECT tylko z anyOf[0].enum — bez "" — brak Select.Item crash
+const SkinEnum        = z.union([z.enum(['oxide', 'oxide-dark']),   z.literal('')]).default('oxide');
+const ContentCssEnum  = z.union([z.enum(['default', 'dark', 'document', 'writer']), z.literal('')]).default('default');
+const ResizeEnum      = z.union([z.enum(['false', 'true', 'both']), z.literal('')]).default('true');
+const ToolbarModeEnum = z.union([z.enum(['floating', 'sliding', 'scrolling', 'wrap']), z.literal('')]).default('floating');
 
 // Module Configuration Schema
 // Defines the structure of settings editable by the tenant admin.
@@ -170,10 +174,14 @@ export const configSchema = z.object({
     // UI & Layout
     // z.coerce.number() — AutoForm wysyła string z widgetu 'text' (np. "800");
     // coerce konwertuje go do liczby przed walidacją min/max, zapobiegając 422.
-    width: z.union([z.coerce.number().min(200).max(3000), z.literal('auto')]).default('auto').describe(
+    // AutoForm wysyła "" dla pustego pola tekstowego — dodajemy z.literal('') do unii,
+    // żeby Kernel nie odrzucił payloadu; realna walidacja (min 200) jest w validateSettingsAgainstSchema.
+    width: z.union([z.coerce.number().min(0).max(3000), z.literal('auto'), z.literal('')]).default('auto').describe(
         'Szerokość edytora w pikselach lub "auto" dla 100% kontenera.'
     ),
-    height: z.number().min(200).max(2000).default(500).describe(
+    // AutoForm wysyła 0 dla pustego widgetu number — min(0) pozwala Kernelowi przepuścić payload;
+    // realna walidacja (min 200) jest w validateSettingsAgainstSchema.
+    height: z.number().min(0).max(2000).default(500).describe(
         'Wysokość edytora w pikselach (200–2000).'
     ),
     resize: ResizeEnum.describe(
