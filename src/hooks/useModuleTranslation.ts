@@ -15,6 +15,17 @@ import { translations as pl } from '../locales/pl.js';
 
 type Lang = 'en' | 'pl';
 
+/**
+ * Resolves the UI language from the host-shell context. The shell has TWO
+ * channels: the FaD path (PlacementBoundary) threads `context.locale`, the
+ * legacy module page threads `context.lang`. Reading only one of them makes
+ * the module EN-only on the other path — always resolve through this helper.
+ */
+export function resolveLang(context: { locale?: unknown; lang?: unknown } | undefined | null): Lang {
+    const raw = context?.locale ?? context?.lang;
+    return raw === 'pl' ? 'pl' : 'en';
+}
+
 export function useModuleTranslation(lang: Lang = 'en') {
     return lang === 'pl' ? pl : en;
 }

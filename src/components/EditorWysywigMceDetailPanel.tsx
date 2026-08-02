@@ -21,7 +21,7 @@
  */
 
 import { Component, type ReactNode, Suspense } from 'react';
-import { useModuleTranslation } from '../hooks/useModuleTranslation.js';
+import { useModuleTranslation, resolveLang } from '../hooks/useModuleTranslation.js';
 
 interface EditorWysywigMceDetailPanelProps {
     context: {
@@ -61,7 +61,7 @@ class ErrorBoundary extends Component<
 }
 
 function EditorWysywigMceDetailPanelInner({ context }: EditorWysywigMceDetailPanelProps) {
-    const t = useModuleTranslation(context.lang as 'en' | 'pl');
+    const t = useModuleTranslation(resolveLang(context));
     const content = context.data?.content ?? '';
     const label = context.data?.label ?? t.previewLabel;
 

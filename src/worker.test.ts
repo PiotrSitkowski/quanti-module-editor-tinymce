@@ -22,6 +22,13 @@ describe('EditorWysywigMceModule Worker', () => {
         expect(editor_wysywig_mceDefinition.schemaVersion).toBeGreaterThanOrEqual(1);
     });
 
+    // ── install: no-op (no DB tables needed) ─────────────────────────────────
+    it('should expose install method that resolves without error', async () => {
+        const { default: EditorWysywigMceModule } = await import('./worker.js');
+        const instance = new EditorWysywigMceModule({} as any, {} as any);
+        await expect(instance.install('trace-1', { projectId: 42 })).resolves.toBeUndefined();
+    });
+
     // ── Sad path: missing projectId ───────────────────────────────────────────
     it('should reject operations without projectId', async () => {
         // Validates that the contract enforces tenant isolation

@@ -4,9 +4,6 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   root: '/Users/piotr/internet-web/Universal_media/Quanti/Quanti-CLI/quanti-module-editor-wysywig-mce/.quanti-dev',
   plugins: [react()],
-  optimizeDeps: {
-    exclude: ['react', 'react-dom'],
-  },
   server: {
     port: 5174,
     open: true,

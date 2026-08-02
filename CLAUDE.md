@@ -66,6 +66,7 @@ Read these first — they define what is and is not allowed in every Fleet modul
 - [DATA ACCESS PATTERNS](./.agent/rules/DATA_ACCESS_PATTERNS.md)
 - [DDD DOCS FIRST](./.agent/rules/DDD_DOCS_FIRST.md)
 - [EDGE CONSTRAINTS](./.agent/rules/EDGE_CONSTRAINTS.md)
+- [FAD UI](./.agent/rules/FAD_UI.md)
 - [LOCALIZATION STANDARDS](./.agent/rules/LOCALIZATION_STANDARDS.md)
 - [MFE PATTERNS](./.agent/rules/MFE_PATTERNS.md)
 - [MODULE MIGRATION PROMPT](./.agent/rules/MODULE_MIGRATION_PROMPT.md)

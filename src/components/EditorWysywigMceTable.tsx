@@ -24,7 +24,7 @@
  */
 
 import { Component, type ReactNode, Suspense, useEffect, useRef, useState, useCallback, useId } from 'react';
-import { useModuleTranslation } from '../hooks/useModuleTranslation.js';
+import { useModuleTranslation, resolveLang } from '../hooks/useModuleTranslation.js';
 import { loadTinyMceFromQuantiCdn, QUANTI_TINYMCE_CDN_URL } from '../lib/tinyMceLoader.js';
 
 // TinyMCE is loaded from CDN -- not bundled. type-only reference.
@@ -139,7 +139,7 @@ class ErrorBoundary extends Component<
 
 // Inner component -- TinyMCE editor
 function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
-    const t = useModuleTranslation(context.lang as 'en' | 'pl');
+    const t = useModuleTranslation(resolveLang(context));
     const editorRef = useRef<HTMLDivElement>(null);
     const editorId = `tinymce-editor-${useId().replace(/:/g, '')}`;
 
@@ -152,7 +152,8 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
     const cfg       = context.config ?? {};
     const legacyCfg = context.data?.config ?? {};
 
-    const height            = cfg.height           ?? (legacyCfg.height as number | undefined)   ?? 500;
+    // `|| 500` zamiast `?? 500` — Kernel może przechować 0 (AutoForm wysyła 0 dla pustego pola number).
+    const height            = cfg.height           || (legacyCfg.height as number | undefined)   || 500;
     const width             = cfg.width            ?? 'auto';
     const resize            = cfg.resize           ?? 'true';
     const menubar           = cfg.menubar          ?? (legacyCfg.menubar as boolean | undefined)  ?? false;
@@ -171,7 +172,7 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
     const automaticUploads  = cfg.automaticUploads ?? true;
 
     // Mapowanie języka platformy → TinyMCE language (plan §4.2)
-    const tinyLang = LANG_MAP[context.lang ?? 'en'] ?? 'en_US';
+    const tinyLang = LANG_MAP[resolveLang(context)] ?? 'en_US';
 
     // Konwersja resize string → TinyMCE native type
     const resizeValue: boolean | 'both' =

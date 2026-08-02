@@ -4,7 +4,7 @@
   "module": {
     "name": "quanti-module-editor-wysywig-mce",
     "displayName": "Editor Wysywig Mce",
-    "version": "1.0.3",
+    "version": "1.0.4",
     "description": "Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides"
   },
   "fleet": {
@@ -19,7 +19,7 @@
     "outputFile": "dist/worker.js",
     "bundleHash": "sha256:62062b65e3b5252212dabaabbb7e614e3fd40ee1119fef5293fe937543c5bcfc",
     "bundleSize": 3260,
-    "builtAt": "2026-05-05T09:37:39.416Z"
+    "builtAt": "2026-08-02T11:51:32.688Z"
   },
   "bindings": {
     "services": [
@@ -408,5 +408,89 @@
       "priority": 10,
       "description": "Producent slotu post_editor hostowanego przez modul posts — zastepuje fallback <textarea> pelnoprawnym edytorem TinyMCE. Czyta seed z context.value, reconciliuje przy zmianie postId (nawigacja miedzy postami), woła context.onChange(text) na kazda edycje aby host wykryl dirty-state. Nie emituje posts:editor:* eventow ani nie wola context.rpc — zapis i akcje bottom_bar nalezace do PostsEditorActions. a11y: root edytora oznaczony id=\"posts-editor-content\" dla powiazania z hostowym <Label>."
     }
-  ]
+  ],
+  "mcpTools": {
+    "create_editor_wysywig_mce": {
+      "name": "create_editor_wysywig_mce",
+      "description": "Creates a new editor-wysywig-mce session record. Use this tool when a host module needs to persist editor state or track content revision history for an editing session.",
+      "tags": [
+        "Editor Wysywig Mce"
+      ],
+      "annotations": {
+        "title": "Create Editor Wysywig Mce",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": false,
+        "openWorldHint": false
+      },
+      "requiredContext": [
+        "projectId",
+        "instanceKey"
+      ],
+      "emitsEvents": [
+        "editor_wysywig_mce.created"
+      ]
+    },
+    "list_editor_wysywig_mce": {
+      "name": "list_editor_wysywig_mce",
+      "description": "Lists all editor-wysywig-mce session records for a project. Use when displaying a history of editing sessions or browsing saved drafts associated with this editor instance.",
+      "tags": [
+        "Editor Wysywig Mce"
+      ],
+      "annotations": {
+        "title": "List Editor Wysywig Mce",
+        "readOnlyHint": true,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "requiredContext": [
+        "projectId",
+        "instanceKey"
+      ],
+      "emitsEvents": []
+    },
+    "update_editor_wysywig_mce": {
+      "name": "update_editor_wysywig_mce",
+      "description": "Updates an existing editor-wysywig-mce session record. Use this tool when autosaving HTML content changes during an active editing session or updating session metadata.",
+      "tags": [
+        "Editor Wysywig Mce"
+      ],
+      "annotations": {
+        "title": "Update Editor Wysywig Mce",
+        "readOnlyHint": false,
+        "destructiveHint": false,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "requiredContext": [
+        "projectId",
+        "instanceKey"
+      ],
+      "emitsEvents": [
+        "editor_wysywig_mce.updated"
+      ]
+    },
+    "delete_editor_wysywig_mce": {
+      "name": "delete_editor_wysywig_mce",
+      "description": "Permanently deletes an editor-wysywig-mce session record. Use only when explicitly removing a saved draft or editing session at the explicit request of the user.",
+      "tags": [
+        "Editor Wysywig Mce"
+      ],
+      "annotations": {
+        "title": "Delete Editor Wysywig Mce",
+        "readOnlyHint": false,
+        "destructiveHint": true,
+        "idempotentHint": true,
+        "openWorldHint": false
+      },
+      "requiredContext": [
+        "projectId",
+        "instanceKey"
+      ],
+      "emitsEvents": [
+        "editor_wysywig_mce.deleted"
+      ]
+    }
+  }
 }

@@ -30,10 +30,13 @@ that other modules (posts, pages, emails, articles) embed to enable formatted HT
 | src/components/EditorWysywigMceTable.tsx | Main WYSIWYG editor slot: loads TinyMCE from CDN, handles onChange/onSave/onCancel callbacks |
 | src/components/EditorWysywigMceDetailPanel.tsx | Read-only HTML preview panel from context.data.content |
 | src/components/EditorWysywigMceDashboardWidget.tsx | Dashboard widget: shows TinyMCE config status and API key state |
+| src/components/PostEditorSlot.tsx | Producer dla slotu `post_editor` modułu `posts`. Adapter TinyMCE mapujący context.value/onChange (kontrakt Posts) na lifecycle edytora; seed + reconcile przy zmianie postId; a11y id="posts-editor-content". Nie emituje posts:editor:* eventów, nie woła context.rpc — zapis po stronie hosta. |
 | src/components/index.ts | Barrel export for all UI components |
 | src/index.ts | MFE entry barrel -- exports components for R2 bundle |
 | src/workers.ts | CQRS Queue Consumer -- processes async events (stub) |
+| src/test-utils/cloudflare-workers-stub.ts | Vitest stub for `cloudflare:workers` virtual module -- provides minimal WorkerEntrypoint base class so unit tests can import Worker code without the CF runtime |
 | src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |
+| src/lib/validators/module-settings.schema.ts | Auto-Default Injection & Strict Coercion — sanitizes empty strings from AutoForm, coerces numeric strings, injects configSchema defaults for missing fields, returns typed ValidationResult or throws SettingsValidationError (422) |
 | .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |
 
 ## Rules & Constraints

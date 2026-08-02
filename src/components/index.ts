@@ -7,6 +7,7 @@
 
 export { EditorWysywigMceTable } from './EditorWysywigMceTable';
 export { EditorWysywigMceDetailPanel } from './EditorWysywigMceDetailPanel';
+export { PostEditorSlot } from './PostEditorSlot';
 
 // Dodajemy 'as', żeby bundle zawierał DOKŁADNIE to, czego szuka Shell
 export { EditorWysywigMceDashboardWidget as EditorWysywigMceWidget } from './EditorWysywigMceDashboardWidget';

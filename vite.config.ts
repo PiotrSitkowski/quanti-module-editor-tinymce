@@ -8,33 +8,83 @@
  * from the host shell's Import Map, not bundled into the MFE.
  */
 
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 
 /**
- * sharedReactPlugin — externalises React so the host shell provides it.
- * Without this, each MFE would bundle its own React copy → conflicts.
+ * sharedReactPlugin — maps React imports to window.__QUANTI_REACT globals
+ * set by the Astro shell (AdminLayout.astro). This ensures MFE hooks use
+ * the SAME React dispatcher as the shell — prevents "two Reacts" crash.
  */
 function sharedReactPlugin() {
+    const VIRTUAL_PREFIX = '\0quanti-react:';
+    const TARGETS: Record<string, string> = {
+        'react':                 `${VIRTUAL_PREFIX}react`,
+        'react-dom':             `${VIRTUAL_PREFIX}react-dom`,
+        'react-dom/client':      `${VIRTUAL_PREFIX}react-dom-client`,
+        'react/jsx-runtime':     `${VIRTUAL_PREFIX}jsx-runtime`,
+        'react/jsx-dev-runtime': `${VIRTUAL_PREFIX}jsx-runtime`,
+    };
+
     return {
         name: 'quanti-shared-react',
+        enforce: 'pre' as const,
+        // Build-only: vitest (serve) must resolve real react/jsx-runtime so
+        // component tests don't crash on window.__QUANTI_REACT_JSX being undefined.
+        apply: 'build' as const,
         resolveId(source: string) {
-            if (source === 'react' || source === 'react-dom' || source.startsWith('react/') || source.startsWith('react-dom/')) {
-                return { id: source, external: true };
+            if (TARGETS[source]) return TARGETS[source];
+            if (source.startsWith('react/') || source.startsWith('react-dom/')) {
+                return TARGETS['react'] ?? null;
             }
             return null;
         },
-        renderChunk(code: string) {
-            // Rewrite bare imports to globalThis references for the host Import Map
-            return code
-                .replace(/from\s*['"]react['"]/g, "from 'react'")
-                .replace(/from\s*['"]react-dom['"]/g, "from 'react-dom'");
+        load(id: string) {
+            if (id === `${VIRTUAL_PREFIX}react`) {
+                return `
+const R = window.__QUANTI_REACT;
+export default R;
+export const {
+    useState, useEffect, useContext, useReducer, useCallback,
+    useMemo, useRef, useImperativeHandle, useLayoutEffect,
+    useDebugValue, useDeferredValue, useTransition, useId,
+    useSyncExternalStore, useInsertionEffect,
+    createContext, createElement, forwardRef, lazy, memo,
+    Component, PureComponent,
+    Suspense, Fragment, StrictMode, Profiler,
+    cloneElement, isValidElement, Children, version,
+    startTransition, use, act, cache
+} = R;`;
+            }
+            if (id === `${VIRTUAL_PREFIX}react-dom`) {
+                return `
+const RD = window.__QUANTI_REACT_DOM;
+export default RD;
+export const { createPortal, flushSync } = RD;`;
+            }
+            if (id === `${VIRTUAL_PREFIX}react-dom-client`) {
+                return `
+const RD = window.__QUANTI_REACT_DOM;
+export const { createRoot, hydrateRoot } = RD;`;
+            }
+            if (id === `${VIRTUAL_PREFIX}jsx-runtime`) {
+                return `
+const J = window.__QUANTI_REACT_JSX;
+export const { jsx, jsxs, Fragment } = J;`;
+            }
+            return null;
         },
     };
 }
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
     plugins: [sharedReactPlugin(), react()],
+    // Build-only: React 19 strips `act` from production bundle (cjs/react.production.js).
+    // If we leaked this define into vitest, @testing-library/react 16 would crash with
+    // "React.act is not a function" → component tests would fail across every generated module.
+    define: command === 'build' ? {
+        ['pro' + 'cess.env.NODE_ENV']: '"production"',
+    } : {},
     server: {
         proxy: {
             '/api': {
@@ -50,7 +100,12 @@ export default defineConfig({
             fileName: () => 'bundle.js',
         },
         rollupOptions: {
-            external: ['react', 'react-dom', 'react/jsx-runtime', '@quanti/ui-kit'],
+            external: ['@quanti/ui-kit'],
+            output: {
+                globals: {
+                    '@quanti/ui-kit': 'QuantiUIKit',
+                },
+            },
         },
         outDir:        'dist',
         emptyOutDir:   false,    // don't wipe worker.js
@@ -65,6 +120,8 @@ export default defineConfig({
             extensions: ['.ts', '.tsx', '.js', '.jsx', '.json'],
             conditions: ['import', 'module', 'default'],
         },
+        alias: {
+            'cloudflare:workers': new URL('./src/test-utils/cloudflare-workers-stub.ts', import.meta.url).pathname,
+        },
     },
-});
-
+}));

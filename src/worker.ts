@@ -53,6 +53,9 @@ export default class EditorWysywigMceModule extends WorkerEntrypoint<Env> {
         return Response.json({ module: 'quanti-module-editor-wysywig-mce', status: 'ok' });
     }
 
+    async install(_traceId: string, _payload: { projectId: number }): Promise<void> {
+    }
+
     async list(traceId: string, payload: any): Promise<any[]> {
         const { projectId, instanceKey = 'default', options } = payload;
         if (!projectId) throw new Error('Missing projectId');

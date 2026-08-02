@@ -1,6 +1,6 @@
 {
   "name": "quanti-module-editor-wysywig-mce",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "private": true,
   "type": "module",
   "scripts": {
@@ -20,16 +20,19 @@
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20241230.0",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/react": "^16.0.0",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "@vitejs/plugin-react": "^4.4.0",
     "drizzle-orm": "^0.38.0",
     "jsdom": "^25.0.0",
+    "react": "^19.2.8",
+    "react-dom": "^19.2.8",
     "tinymce": "^7.9.2",
     "typescript": "^5.7.3",
     "vite": "^6.0.0",
     "vitest": "^3.0.0",
-    "wrangler": "^3.98.0"
+    "wrangler": "^4.50.0"
   }
 }

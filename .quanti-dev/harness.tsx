@@ -56,7 +56,7 @@ function Topbar() {
                    background: '#fff', fontFamily: 'Inter, sans-serif' }}>
       <span style={{ fontWeight: 600, fontSize: 14 }}>▤ Quanti Mock Harness</span>
       <span style={{ marginLeft: 'auto', fontSize: 12, color: '#6b7280' }}>
-        Module: editor-wysywig-mce v1.0.0
+        Module: editor-wysywig-mce v1.0.1
       </span>
     </div>
   );
