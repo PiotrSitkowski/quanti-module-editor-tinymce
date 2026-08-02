@@ -15,6 +15,48 @@ You MUST follow ALL rules in this file and the linked documents. No exceptions.
 
 ---
 
+## ⚡ Critical Rules (from active skills)
+
+These are the MUST/MUST NOT constraints from every active skill in `.agent/skills/`.
+**Read this table BEFORE any edit.** Every row has a `Verify` command that MUST exit 0
+after your change. A failing verify = the change is wrong and MUST be reverted or fixed.
+
+- (no active skills found — run `quanti rules:sync` to pull the latest set)
+
+---
+
+## 🗺 Knowledge Base Router
+
+Quanti knowledge vault lives under `.agent/knowledge/`. Use this router as the routing
+table: *what am I editing? → which layer do I need to consult?*
+
+- (no knowledge base — run `quanti rules:sync` or `quanti kb regen --all`)
+
+---
+
+## 🔁 Skill Application Protocol
+
+Before editing any file in `modules/`, `services/`, or `src/`:
+
+1. **Locate applicable skill.** Scan `.agent/skills/` for a skill whose `applies_when`
+   matches the file path, the user intent, or the task at hand. If none matches, proceed
+   with the generic architecture rules in §1 and §2.
+2. **Echo hard constraints BEFORE your first edit.** Paste the skill's
+   `hard_constraints[].must` as a bulleted comment in your response. This is anti-drift:
+   the agent has to acknowledge the rules out loud, not just read them silently.
+3. **Run verify commands.** Every `hard_constraints[].verify` shell command MUST run
+   clean after the change (exit code 0). If you cannot run it, say so explicitly.
+4. **Emit verify checklist at the end.** List each `Verify before commit` bullet from the
+   skill with `[x]` / `[ ]` / `[skip: reason]` — no silent skips.
+
+If an active skill's `hard_constraints` contradict the task, STOP and surface the
+conflict to the user. Do NOT silently override.
+
+Tooling support: `quanti skill apply --list` shows active skills;
+`quanti skill apply <id>` prints the full contract (constraints + procedure + verify).
+
+---
+
 ## 1. Architecture Fundamentals
 
 Read these first — they define what is and is not allowed in every Fleet module:
@@ -26,8 +68,10 @@ Read these first — they define what is and is not allowed in every Fleet modul
 - [EDGE CONSTRAINTS](./.agent/rules/EDGE_CONSTRAINTS.md)
 - [LOCALIZATION STANDARDS](./.agent/rules/LOCALIZATION_STANDARDS.md)
 - [MFE PATTERNS](./.agent/rules/MFE_PATTERNS.md)
+- [MODULE MIGRATION PROMPT](./.agent/rules/MODULE_MIGRATION_PROMPT.md)
 - [SELF DOCUMENTING STANDARDS](./.agent/rules/SELF_DOCUMENTING_STANDARDS.md)
 - [TESTING STANDARDS](./.agent/rules/TESTING_STANDARDS.md)
+- [UI EXTENSION SLOTS](./.agent/rules/UI_EXTENSION_SLOTS.md)
 - [VERSIONING STANDARDS](./.agent/rules/VERSIONING_STANDARDS.md)
 
 ---
@@ -46,6 +90,7 @@ Each example contains ✅ CORRECT and ❌ INCORRECT patterns with TDD steps.
 - [CS-06: Cloudflare Queues — Dual-Write (CQRS) i Reagowanie na Zdarzenia](./.agent/examples/CS-06-Queues-CQRS.md)
 - [CS-07: Vectorize & AI — Wektoryzacja w Tle (RAG)](./.agent/examples/CS-07-Vectorize-RAG.md)
 - [CS-08: Quanti UI Kit — Inteligentne Sloty i Dane z context](./.agent/examples/CS-08-UIKit-Slots.md)
+- [CS-09: Edge Panels — Content-Driven Visibility i Sterowanie Wymiarami z Poziomu Modułu](./.agent/examples/CS-09-EdgePanels-Sizing.md)
 
 ---
 

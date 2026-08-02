@@ -1,6 +1,6 @@
 {
   "protocolVersion": "3.5.1",
-  "generatedAt": "2026-03-26T19:13:10.942Z",
+  "generatedAt": "2026-05-05T09:37:39.638Z",
   "permissions": {
     ".agent/rules/*": "READ_ONLY",
     ".agent/rules/CQRS_PATTERNS.md": "READ_ONLY",

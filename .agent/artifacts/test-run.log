@@ -1,12 +1,14 @@
-# Test Run — 2026-03-27T22:08:04.301Z
+# Test Run — 2026-05-05T09:37:38.419Z
 
-> quanti-module-editor-wysywig-mce@1.0.1 test
+> quanti-module-editor-wysywig-mce@1.0.3 test
 > vitest run
 
 
  RUN  v3.2.4 /Users/piotr/internet-web/Universal_media/Quanti/Quanti-CLI/quanti-module-editor-wysywig-mce
 
- ✓ src/worker.test.ts (3 tests) 69ms
+ ✓ src/lib/validators/module-settings.schema.test.ts (25 tests) 52ms
+ ✓ src/worker.test.ts (4 tests) 85ms
+ ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 84ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render preview container when content is provided
 🔥 SHELL PRZESYŁA DO PODGLĄDU: {
   projectId: [33m42[39m,
@@ -31,7 +33,6 @@ stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceD
   data: { content: [32m''[39m }
 }
 
- ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 60ms
 stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render empty state when context.data is undefined
 🔥 SHELL PRZESYŁA DO PODGLĄDU: { projectId: [33m42[39m, instanceKey: [32m'default'[39m, lang: [32m'en'[39m, data: [90mundefined[39m }
 
@@ -51,10 +52,10 @@ stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceD
   data: { content: [32m'<p>Test</p>'[39m, label: [32m'My Custom Label'[39m }
 }
 
- ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 105ms
- ✓ src/components/EditorWysywigMceTable.test.tsx (17 tests) 222ms
+ ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 165ms
+ ✓ src/components/EditorWysywigMceTable.test.tsx (17 tests) 218ms
 
- Test Files  4 passed (4)
-      Tests  27 passed (27)
-   Start at  23:08:00
-   Duration  3.17s (transform 258ms, setup 0ms, collect 1.28s, tests 456ms, environment 4.07s, prepare 1.24s)
+ Test Files  5 passed (5)
+      Tests  53 passed (53)
+   Start at  11:37:34
+   Duration  3.34s (transform 206ms, setup 0ms, collect 1.30s, tests 603ms, environment 7.20s, prepare 1.35s)
