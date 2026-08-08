@@ -1,62 +1,19 @@
-# Test Run — 2026-08-02T11:51:31.744Z
+# Test Run — 2026-08-08T19:36:08.448Z
 
-> quanti-module-editor-wysywig-mce@1.0.4 test
+> quanti-module-editor-wysywig-mce@1.0.5 test
 > vitest run
 
 
  RUN  v3.2.4 /Users/piotr/internet-web/Universal_media/Quanti/Quanti-CLI/quanti-module-editor-wysywig-mce
 
- ✓ src/lib/validators/module-settings.schema.test.ts (25 tests) 103ms
- ✓ src/worker.test.ts (4 tests) 100ms
-stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render preview container when content is provided
-🔥 SHELL PRZESYŁA DO PODGLĄDU: {
-  projectId: [33m42[39m,
-  instanceKey: [32m'default'[39m,
-  lang: [32m'en'[39m,
-  data: { content: [32m'<p>Hello <strong>world</strong></p>'[39m }
-}
-
-stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render the HTML content from context.data
-🔥 SHELL PRZESYŁA DO PODGLĄDU: {
-  projectId: [33m42[39m,
-  instanceKey: [32m'default'[39m,
-  lang: [32m'en'[39m,
-  data: { content: [32m'<p>Hello <strong>world</strong></p>'[39m }
-}
-
-stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render empty state when content is empty string
-🔥 SHELL PRZESYŁA DO PODGLĄDU: {
-  projectId: [33m42[39m,
-  instanceKey: [32m'default'[39m,
-  lang: [32m'en'[39m,
-  data: { content: [32m''[39m }
-}
-
-stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render empty state when context.data is undefined
-🔥 SHELL PRZESYŁA DO PODGLĄDU: { projectId: [33m42[39m, instanceKey: [32m'default'[39m, lang: [32m'en'[39m, data: [90mundefined[39m }
-
- ✓ src/components/locale-channel.test.tsx (5 tests) 122ms
-stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should render without crash when projectId is 0
-🔥 SHELL PRZESYŁA DO PODGLĄDU: {
-  projectId: [33m0[39m,
-  instanceKey: [32m'default'[39m,
-  lang: [32m'en'[39m,
-  data: { content: [32m'<p>Hello <strong>world</strong></p>'[39m }
-}
-
- ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 128ms
-stdout | src/components/EditorWysywigMceDetailPanel.test.tsx > EditorWysywigMceDetailPanel (detail_panel slot) > should display custom label when context.data.label is provided
-🔥 SHELL PRZESYŁA DO PODGLĄDU: {
-  projectId: [33m42[39m,
-  instanceKey: [32m'default'[39m,
-  lang: [32m'en'[39m,
-  data: { content: [32m'<p>Test</p>'[39m, label: [32m'My Custom Label'[39m }
-}
-
- ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 225ms
- ✓ src/components/EditorWysywigMceTable.test.tsx (17 tests) 298ms
+ ✓ src/worker.test.ts (4 tests) 122ms
+ ✓ src/lib/validators/module-settings.schema.test.ts (25 tests) 62ms
+ ✓ src/components/EditorWysywigMceDashboardWidget.test.tsx (1 test) 102ms
+ ✓ src/components/EditorWysywigMceDetailPanel.test.tsx (6 tests) 152ms
+ ✓ src/components/locale-channel.test.tsx (5 tests) 111ms
+ ✓ src/components/EditorWysywigMceTable.test.tsx (17 tests) 208ms
 
  Test Files  6 passed (6)
       Tests  58 passed (58)
-   Start at  13:51:27
-   Duration  3.25s (transform 225ms, setup 0ms, collect 2.27s, tests 976ms, environment 7.43s, prepare 1.52s)
+   Start at  21:36:04
+   Duration  3.14s (transform 235ms, setup 0ms, collect 2.29s, tests 757ms, environment 7.16s, prepare 1.59s)
