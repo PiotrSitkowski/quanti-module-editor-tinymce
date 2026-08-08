@@ -18,7 +18,7 @@ export const editor_wysywig_mceDefinition = {
     name:          'Editor Wysywig Mce',
     serviceType:   'content',
     schemaVersion: 1,
-    version:       '1.0.4',
+    version:       '1.0.5',
     icon:          'Box',
 
     description: `Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides

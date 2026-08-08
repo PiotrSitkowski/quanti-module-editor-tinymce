@@ -111,9 +111,7 @@ function EditorWysywigMceDetailPanelInner({ context }: EditorWysywigMceDetailPan
 // Public export -- wrapped in ErrorBoundary + Suspense
 
 export function EditorWysywigMceDetailPanel({ context }: EditorWysywigMceDetailPanelProps) {
-    // �️ DETEKTYW: Co dokładnie daje nam Shell?
-    console.log("🔥 SHELL PRZESYŁA DO PODGLĄDU:", context);
-    // �🛡️ ŻELAZNY BEZPIECZNIK: Jeśli Shell jeszcze nie wstrzyknął kontekstu, pokaż loader
+    // 🛡️ ŻELAZNY BEZPIECZNIK: Jeśli Shell jeszcze nie wstrzyknął kontekstu, pokaż loader
     if (!context) {
         return <p className="text-[13px] text-gray-400 animate-pulse">Ładowanie kontekstu...</p>;
     }
