@@ -4,7 +4,7 @@
   "module": {
     "name": "quanti-module-editor-wysywig-mce",
     "displayName": "Editor Wysywig Mce",
-    "version": "1.0.5",
+    "version": "1.1.0",
     "description": "Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides"
   },
   "fleet": {
@@ -19,7 +19,7 @@
     "outputFile": "dist/worker.js",
     "bundleHash": "sha256:62062b65e3b5252212dabaabbb7e614e3fd40ee1119fef5293fe937543c5bcfc",
     "bundleSize": 3260,
-    "builtAt": "2026-08-08T19:36:09.388Z"
+    "builtAt": "2026-10-20T20:50:58.288Z"
   },
   "bindings": {
     "services": [
@@ -46,8 +46,8 @@
   },
   "semantic_knowledge": {
     "overview": "Reusable WYSIWYG editor slot module powered by **TinyMCE Cloud**.\nThis module does **not** manage its own database. It acts as a pure UI slot\nthat other modules (posts, pages, emails, articles) embed to enable formatted HTML authoring.\n\n**Key concepts:**\n- The editor receives initial HTML via `props.context.data.initialContent`\n- Content changes are emitted back via `props.context.actions.onChange(html: string)`\n- Save action is emitted via `props.context.actions.onSave(html: string)`\n- TinyMCE jest ładowany z **Quanti CDN (R2)** via `src/lib/tinyMceLoader.ts`\n  (URL: `https://cdn.quanti-system.cloud/libs/tinymce/tinymce.min.js`)",
-    "fileMap": "| Plik | Logika Biznesowa |\n|------|-----------------||\n| src/worker.ts | WorkerEntrypoint stub -- no active DB logic; contract validation only |\n| schema.ts | Drizzle ORM schema stub (mandatory columns only -- no module-specific columns) |\n| contract.ts | RPC contract -- Zod schemas for tenant-isolated payload validation |\n| definition.ts | Module manifest -- configSchema (tinyMceApiKey, editorHeight, plugins, toolbar) |\n| src/hooks/useModuleTranslation.ts | i18n hook -- returns EN/PL translations for editor labels |\n| src/locales/en.ts | English translations (source of truth) |\n| src/locales/pl.ts | Polish translations (must mirror en.ts keys) |\n| src/locales/index.ts | Lazy-loaded locale barrel export |\n| src/components/EditorWysywigMceTable.tsx | Main WYSIWYG editor slot: loads TinyMCE from CDN, handles onChange/onSave/onCancel callbacks |\n| src/components/EditorWysywigMceDetailPanel.tsx | Read-only HTML preview panel from context.data.content |\n| src/components/EditorWysywigMceDashboardWidget.tsx | Dashboard widget: shows TinyMCE config status and API key state |\n| src/components/PostEditorSlot.tsx | Producer dla slotu `post_editor` modułu `posts`. Adapter TinyMCE mapujący context.value/onChange (kontrakt Posts) na lifecycle edytora; seed + reconcile przy zmianie postId; a11y id=\"posts-editor-content\". Nie emituje posts:editor:* eventów, nie woła context.rpc — zapis po stronie hosta. |\n| src/components/index.ts | Barrel export for all UI components |\n| src/index.ts | MFE entry barrel -- exports components for R2 bundle |\n| src/workers.ts | CQRS Queue Consumer -- processes async events (stub) |\n| src/test-utils/cloudflare-workers-stub.ts | Vitest stub for `cloudflare:workers` virtual module -- provides minimal WorkerEntrypoint base class so unit tests can import Worker code without the CF runtime |\n| src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |\n| src/lib/validators/module-settings.schema.ts | Auto-Default Injection & Strict Coercion — sanitizes empty strings from AutoForm, coerces numeric strings, injects configSchema defaults for missing fields, returns typed ValidationResult or throws SettingsValidationError (422) |\n| .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |",
-    "rulesAndConstraints": "- **No direct database writes from UI components** -- this module is a pure UI primitive\n- **TinyMCE API Key** is tenant-configurable via `configSchema.tinyMceApiKey` (Admin UI)\n- **HTML sanitization** is the responsibility of the **host module** (posts, pages, etc.)\n  before storing content in their DB or before passing it to the detail panel\n- Never call `fetch()` inside any component -- all communication via `context.api` or `context.actions`\n- TinyMCE ładowany z **Quanti CDN (R2)** via `src/lib/tinyMceLoader.ts` — **zero połączeń z zewnętrznymi sieciami**\n- lib-Isolation Rule: żaden komponent UI nie może inline wstrzykiwać `<script>` — wyłącznie przez `loadTinyMceFromQuantiCdn()`",
+    "fileMap": "| Plik | Logika Biznesowa |\n|------|-----------------||\n| src/worker.ts | WorkerEntrypoint stub -- no active DB logic; contract validation only |\n| schema.ts | Drizzle ORM schema stub (mandatory columns only -- no module-specific columns) |\n| contract.ts | RPC contract -- Zod schemas for tenant-isolated payload validation |\n| definition.ts | Module manifest -- configSchema (17 editor settings: layout, theme, plugins, toolbar, paste behaviour) |\n| src/hooks/useModuleTranslation.ts | i18n hook -- returns EN/PL translations for editor labels |\n| src/locales/en.ts | English translations (source of truth) |\n| src/locales/pl.ts | Polish translations (must mirror en.ts keys) |\n| src/locales/index.ts | Lazy-loaded locale barrel export |\n| src/components/EditorWysywigMceTable.tsx | Main WYSIWYG editor slot: loads TinyMCE from CDN, handles onChange/onSave/onCancel callbacks |\n| src/components/EditorWysywigMceDetailPanel.tsx | Read-only HTML preview panel from context.data.content |\n| src/components/EditorWysywigMceDashboardWidget.tsx | Dashboard widget: shows TinyMCE config status and API key state |\n| src/components/PostEditorSlot.tsx | Producer dla slotu `post_editor` modułu `posts`. Adapter TinyMCE mapujący context.value/onChange (kontrakt Posts) na lifecycle edytora; seed + reconcile przy zmianie postId; a11y id=\"posts-editor-content\". Nie emituje posts:editor:* eventów, nie woła context.rpc — zapis po stronie hosta. |\n| src/components/index.ts | Barrel export for all UI components |\n| src/index.ts | MFE entry barrel -- exports components for R2 bundle |\n| src/workers.ts | CQRS Queue Consumer -- processes async events (stub) |\n| src/test-utils/cloudflare-workers-stub.ts | Vitest stub for `cloudflare:workers` virtual module -- provides minimal WorkerEntrypoint base class so unit tests can import Worker code without the CF runtime |\n| src/lib/editorSettings.ts | One read of the editor's settings for both components: `context.moduleSettings` (kernel), the embedding's `context.config` over it, declared defaults; maps them to TinyMCE options |\n| src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |\n| src/lib/validators/module-settings.schema.ts | Auto-Default Injection & Strict Coercion — sanitizes empty strings from AutoForm, coerces numeric strings, injects configSchema defaults for missing fields, returns typed ValidationResult or throws SettingsValidationError (422) |\n| .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |",
+    "rulesAndConstraints": "- **No direct database writes from UI components** -- this module is a pure UI primitive\n- **Settings** (`configSchema`, 17 fields) reach the editor through `context.moduleSettings` — on its own page and in any host's slot (`src/lib/editorSettings.ts`); the embedding's `context.config` stands over them\n- **HTML sanitization** is the responsibility of the **host module** (posts, pages, etc.)\n  before storing content in their DB or before passing it to the detail panel\n- Never call `fetch()` inside any component -- all communication via `context.api` or `context.actions`\n- TinyMCE ładowany z **Quanti CDN (R2)** via `src/lib/tinyMceLoader.ts` — **zero połączeń z zewnętrznymi sieciami**\n- lib-Isolation Rule: żaden komponent UI nie może inline wstrzykiwać `<script>` — wyłącznie przez `loadTinyMceFromQuantiCdn()`",
     "orchestrationGuide": "**Triggered by:**\n- Host module renders `editor_wysywig_mce_main_view` slot\n- Host module renders `editor_wysywig_mce_detail_panel` slot (preview)\n- Dashboard renders `dashboard_widget` slot\n\n**Emits (via context.actions):**\n- `context.actions.onChange(html: string)` -- on every keystroke / content change\n- `context.actions.onSave(html: string)` -- on Save button click\n- `context.actions.onCancel()` -- on Cancel button click\n\n**Composes with:**\n- `posts` module -- article body editing\n- `pages` module -- static page content editing\n- `emails` module -- email template editing"
   },
   "supportedLanguages": [
@@ -58,11 +58,6 @@
     "schema": {
       "type": "object",
       "properties": {
-        "tinyMceApiKey": {
-          "type": "string",
-          "default": "",
-          "description": "Klucz API TinyMCE. Pozostaw puste dla instalacji GPL z Quanti CDN."
-        },
         "width": {
           "anyOf": [
             {
@@ -222,12 +217,6 @@
       "$schema": "http://json-schema.org/draft-07/schema#"
     },
     "ui": {
-      "tinyMceApiKey": {
-        "label": "TinyMCE API Key",
-        "widget": "text",
-        "description": "Optional commercial key. Leave empty when using Quanti CDN (GPL).",
-        "group": "Core"
-      },
       "width": {
         "label": "Editor width",
         "widget": "text",
@@ -492,5 +481,34 @@
         "editor_wysywig_mce.deleted"
       ]
     }
+  },
+  "dataSemantics": {
+    "createdAt": {
+      "semanticType": "temporal",
+      "impact": "neutral",
+      "unit": "timestamp",
+      "description": "Creation date of the record."
+    }
+  },
+  "column_semantics": {
+    "createdAt": {
+      "semanticType": "temporal",
+      "unit": "timestamp",
+      "aggregatable": false,
+      "aiHint": "Unix timestamp of record creation. Immutable after insert. Used for audit trail only."
+    }
+  },
+  "process_graph": {
+    "participatesIn": [
+      {
+        "processId": "content-editing",
+        "role": "creator",
+        "description": "Provides an embeddable TinyMCE WYSIWYG editor slot consumed by content modules such as posts, pages, and emails to enable rich HTML authoring.",
+        "step": 1,
+        "totalSteps": 1
+      }
+    ],
+    "automations": [],
+    "relations": []
   }
 }
