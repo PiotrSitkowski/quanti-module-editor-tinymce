@@ -22,7 +22,7 @@ that other modules (posts, pages, emails, articles) embed to enable formatted HT
 | src/worker.ts | WorkerEntrypoint stub -- no active DB logic; contract validation only |
 | schema.ts | Drizzle ORM schema stub (mandatory columns only -- no module-specific columns) |
 | contract.ts | RPC contract -- Zod schemas for tenant-isolated payload validation |
-| definition.ts | Module manifest -- configSchema (tinyMceApiKey, editorHeight, plugins, toolbar) |
+| definition.ts | Module manifest -- configSchema (17 editor settings: layout, theme, plugins, toolbar, paste behaviour) |
 | src/hooks/useModuleTranslation.ts | i18n hook -- returns EN/PL translations for editor labels |
 | src/locales/en.ts | English translations (source of truth) |
 | src/locales/pl.ts | Polish translations (must mirror en.ts keys) |
@@ -35,6 +35,7 @@ that other modules (posts, pages, emails, articles) embed to enable formatted HT
 | src/index.ts | MFE entry barrel -- exports components for R2 bundle |
 | src/workers.ts | CQRS Queue Consumer -- processes async events (stub) |
 | src/test-utils/cloudflare-workers-stub.ts | Vitest stub for `cloudflare:workers` virtual module -- provides minimal WorkerEntrypoint base class so unit tests can import Worker code without the CF runtime |
+| src/lib/editorSettings.ts | One read of the editor's settings for both components: `context.moduleSettings` (kernel), the embedding's `context.config` over it, declared defaults; maps them to TinyMCE options |
 | src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |
 | src/lib/validators/module-settings.schema.ts | Auto-Default Injection & Strict Coercion — sanitizes empty strings from AutoForm, coerces numeric strings, injects configSchema defaults for missing fields, returns typed ValidationResult or throws SettingsValidationError (422) |
 | .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |
@@ -42,7 +43,7 @@ that other modules (posts, pages, emails, articles) embed to enable formatted HT
 ## Rules & Constraints
 
 - **No direct database writes from UI components** -- this module is a pure UI primitive
-- **TinyMCE API Key** is tenant-configurable via `configSchema.tinyMceApiKey` (Admin UI)
+- **Settings** (`configSchema`, 17 fields) reach the editor through `context.moduleSettings` — on its own page and in any host's slot (`src/lib/editorSettings.ts`); the embedding's `context.config` stands over them
 - **HTML sanitization** is the responsibility of the **host module** (posts, pages, etc.)
   before storing content in their DB or before passing it to the detail panel
 - Never call `fetch()` inside any component -- all communication via `context.api` or `context.actions`
@@ -62,7 +63,6 @@ that other modules (posts, pages, emails, articles) embed to enable formatted HT
         lang: 'pl',
         data: {
             initialContent: post.body,            // HTML string
-            tinyMceApiKey: config.tinyMceApiKey,  // from tenant config
             config: {
                 height: 600,
                 toolbar: 'undo redo | bold italic | link',

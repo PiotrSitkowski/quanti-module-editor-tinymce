@@ -18,7 +18,7 @@ export const editor_wysywig_mceDefinition = {
     name:          'Editor Wysywig Mce',
     serviceType:   'content',
     schemaVersion: 1,
-    version:       '1.0.5',
+    version:       '1.1.0',
     icon:          'Box',
 
     description: `Reusable WYSIWYG editor slot module powered by TinyMCE hosted on Quanti CDN (R2). This module provides
@@ -166,10 +166,8 @@ const ToolbarModeEnum = z.union([z.enum(['floating', 'sliding', 'scrolling', 'wr
 // Platform Admin UI auto-generates a form from this schema.
 // configSchema keys MUST match configUi keys — enforced by `quanti validate`.
 export const configSchema = z.object({
-    // Core & Auth
-    tinyMceApiKey: z.string().default('').describe(
-        'Klucz API TinyMCE. Pozostaw puste dla instalacji GPL z Quanti CDN.'
-    ),
+    // No API key: the editor loads from the Quanti CDN under GPL (`license_key: 'gpl'`) and nothing ever read the
+    // saved key — a field that promised an effect it never had (kernel prompt 131, the "every setting has a reader" rule).
 
     // UI & Layout
     // z.coerce.number() — AutoForm wysyła string z widgetu 'text' (np. "800");
@@ -253,7 +251,7 @@ export const configSchema = z.object({
 export type EditorConfig = z.infer<typeof configSchema>;
 
 // Configuration UI Hints
-// Keys MUST match configSchema keys (16 fields) — enforced by `quanti validate`.
+// Keys MUST match configSchema keys (17 fields) — enforced by `quanti validate`.
 // Labels/descriptions are English strings — Kernel manifest schema accepts only string type.
 // Platform i18n note: per manifest validator contract, configUi fields are flat strings.
 // Module UI strings (component layer) remain fully localized via src/locales/*.ts.
@@ -266,14 +264,6 @@ export const configUi: Record<string, {
     min?: number;
     max?: number;
 }> = {
-    // ── Core & Auth ──────────────────────────────────────────────────────────
-    tinyMceApiKey: {
-        label:       'TinyMCE API Key',
-        widget:      'text',
-        description: 'Optional commercial key. Leave empty when using Quanti CDN (GPL).',
-        group:       'Core',
-    },
-
     // ── UI & Layout ──────────────────────────────────────────────────────────
     width: {
         label:       'Editor width',

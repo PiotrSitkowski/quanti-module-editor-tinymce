@@ -6,8 +6,8 @@
  *
  * Contract (via props.context):
  *   context.data.initialContent  -- HTML string to pre-populate the editor
- *   context.data.tinyMceApiKey   -- Override API key (falls back to config)
- *   context.data.config          -- Optional TinyMCE init overrides (toolbar, plugins, height)
+ *   context.moduleSettings       -- the editor's saved settings, handed over by the kernel (here and in any slot)
+ *   context.config               -- the embedding's own configuration; stands over the settings
  *   context.actions.onChange     -- Called on every content change with (html: string)
  *   context.actions.onSave       -- Called when user clicks Save with (html: string)
  *   context.actions.onCancel     -- Called when user clicks Cancel
@@ -26,6 +26,7 @@
 import { Component, type ReactNode, Suspense, useEffect, useRef, useState, useCallback, useId } from 'react';
 import { useModuleTranslation, resolveLang } from '../hooks/useModuleTranslation.js';
 import { loadTinyMceFromQuantiCdn, QUANTI_TINYMCE_CDN_URL } from '../lib/tinyMceLoader.js';
+import { resolveEditorSettings, tinyMceOptions } from '../lib/editorSettings.js';
 
 // TinyMCE is loaded from CDN -- not bundled. type-only reference.
 declare global {
@@ -34,18 +35,8 @@ declare global {
     }
 }
 
-// Legacy interface for backward-compat with context.data.config
-interface TinyMceConfig {
-    toolbar?: string;
-    plugins?: string;
-    height?: number;
-    menubar?: boolean;
-    [key: string]: unknown;
-}
-
-// New: top-level context.config injected by Kernel (per plan §4.1)
+// The embedding's own configuration (a wiring's `config`); stands over the module's settings.
 interface EditorConfigFromContext {
-    tinyMceApiKey?: string;
     width?: number | 'auto';
     height?: number;
     resize?: 'false' | 'true' | 'both';
@@ -73,9 +64,7 @@ interface EditorWysywigMceTableProps {
         config?: EditorConfigFromContext;   // New: Kernel-injected config (priority)
         data?: {
             initialContent?: string;
-            tinyMceApiKey?: string;
-            config?: TinyMceConfig;         // Legacy: backward-compat fallback
-        };
+                };
         actions?: {
             onChange?: (html: string) => void;
             onSave?: (html: string) => void;
@@ -88,18 +77,6 @@ interface EditorWysywigMceTableProps {
         [key: string]: unknown;
     };
 }
-
-// ── Stałe domyślne (poza komponentem — plan §4.3) ────────────────────────────
-const DEFAULT_PLUGINS =
-    'advlist autolink lists link image charmap preview anchor ' +
-    'searchreplace visualblocks code fullscreen insertdatetime ' +
-    'media table help wordcount';
-
-const DEFAULT_TOOLBAR =
-    'undo redo | blocks | bold italic underline strikethrough | ' +
-    'alignleft aligncenter alignright alignjustify | ' +
-    'bullist numlist outdent indent | link image | ' +
-    'removeformat | code | fullscreen';
 
 const DEFAULT_CONTENT_STYLE = `
     body {
@@ -147,39 +124,14 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
     const [hasError, setHasError] = useState(false);
     const [currentHtml, setCurrentHtml] = useState(context.data?.initialContent ?? '');
 
-    // ── Bezpieczna destrukturyzacja z defaultami (plan §4.2 IRON GUARD Pattern) ──
-    // Priorytet: context.config (nowe) > context.data.config (legacy) > hardcoded defaults
-    const cfg       = context.config ?? {};
-    const legacyCfg = context.data?.config ?? {};
-
-    // `|| 500` zamiast `?? 500` — Kernel może przechować 0 (AutoForm wysyła 0 dla pustego pola number).
-    const height            = cfg.height           || (legacyCfg.height as number | undefined)   || 500;
-    const width             = cfg.width            ?? 'auto';
-    const resize            = cfg.resize           ?? 'true';
-    const menubar           = cfg.menubar          ?? (legacyCfg.menubar as boolean | undefined)  ?? false;
-    const statusbar         = cfg.statusbar        ?? true;
-    const toolbarSticky     = cfg.toolbarSticky    ?? false;
-    const branding          = cfg.branding         ?? false;
-    const skin              = cfg.skin             ?? 'oxide';
-    const contentCss        = cfg.contentCss       ?? 'default';
-    const contentStyle      = cfg.contentStyle     || DEFAULT_CONTENT_STYLE;
-    const plugins           = cfg.plugins          ?? (legacyCfg.plugins as string | undefined)   ?? DEFAULT_PLUGINS;
-    const toolbar           = cfg.toolbar          ?? (legacyCfg.toolbar as string | undefined)   ?? DEFAULT_TOOLBAR;
-    const toolbarMode       = cfg.toolbarMode      ?? 'floating';
-    const browserSpellcheck = cfg.browserSpellcheck ?? true;
-    const pasteAsText       = cfg.pasteAsText      ?? false;
-    const pasteDataImages   = cfg.pasteDataImages  ?? true;
-    const automaticUploads  = cfg.automaticUploads ?? true;
+    // One read of the settings wherever the editor stands: the kernel's `moduleSettings`, the embedding's `config`
+    // over them, the declared defaults below (`../lib/editorSettings.ts`, kernel prompt 131).
+    const settings = resolveEditorSettings(context);
 
     // Mapowanie języka platformy → TinyMCE language (plan §4.2)
     const tinyLang = LANG_MAP[resolveLang(context)] ?? 'en_US';
 
-    // Konwersja resize string → TinyMCE native type
-    const resizeValue: boolean | 'both' =
-        resize === 'false' ? false : resize === 'both' ? 'both' : true;
 
-    // Szerokość: 'auto' → undefined (TinyMCE przyjmuje undefined jako 100%)
-    const widthValue = width === 'auto' ? undefined : width;
 
     const onChangeRef = useRef(context.actions?.onChange);
     const onSaveRef = useRef(context.actions?.onSave);
@@ -203,29 +155,8 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
                     base_url: baseUrl,            // CRITICAL: skins/themes path on R2
                     suffix: '.min',
                     language: tinyLang,
-                    // Layout
-                    ...(widthValue !== undefined ? { width: widthValue } : {}),
-                    height,
-                    resize: resizeValue,
-                    menubar,
-                    statusbar,
-                    toolbar_sticky: toolbarSticky,
-                    // Branding
-                    branding,
+                    ...tinyMceOptions(settings, DEFAULT_CONTENT_STYLE),
                     promotion: false,            // zawsze false — Quanti white-label
-                    // Theming
-                    skin,
-                    content_css: contentCss,
-                    content_style: contentStyle,
-                    // Plugins & Toolbar
-                    plugins,
-                    toolbar,
-                    toolbar_mode: toolbarMode,
-                    // Behavior
-                    browser_spellcheck: browserSpellcheck,
-                    paste_as_text: pasteAsText,
-                    paste_data_images: pasteDataImages,
-                    automatic_uploads: automaticUploads,
                     setup: (editor: any) => {
                         editor.on('init', () => {
                             if (destroyed) return;
@@ -281,7 +212,7 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
     }
 
     return (
-        <div className="w-full relative" style={{ minHeight: `${height}px` }} data-testid="editor-container">
+        <div className="w-full relative" style={{ minHeight: `${settings.height}px` }} data-testid="editor-container">
             {isLoading && (
                 <div className="absolute inset-0 flex items-center justify-center bg-gray-50 dark:bg-gray-900 z-10 rounded-md">
                     <p className="text-[13px] text-gray-400 animate-pulse">{t.loadingText}</p>
@@ -293,7 +224,7 @@ function EditorWysywigMceTableInner({ context }: EditorWysywigMceTableProps) {
                 ref={editorRef}
                 data-testid="editor-textarea"
                 className="w-full rounded-md border border-gray-200 dark:border-gray-700"
-                style={{ height: `${height}px` }}
+                style={{ height: `${settings.height}px` }}
             />
         </div>
     );

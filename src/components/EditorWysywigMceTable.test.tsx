@@ -280,15 +280,18 @@ describe('EditorWysywigMceTable — Config from context.config [TDD §5]', () =>
         );
     });
 
-    // ── Backward compat: legacy context.data.config.height ───────────────────
-    it('legacy context.data.config.height used when context.config absent', async () => {
+    // ── `context.data.config` is not a channel (kernel prompt 131) ───────────
+    // Since 2026-03-27 this test held `data.config` as a fallback, but nothing ever wrote it — measured 2026-10-20, the
+    // kernel's page hands the module's settings in `data` itself and, now, in `moduleSettings`. The intent (saved
+    // configuration drives TinyMCE) is held by `editor-settings.class.test.tsx`, over every setting; this pins the flip.
+    it('context.data.config is not read — the settings come from context.moduleSettings', async () => {
         const ctx = buildCtx({
             config: undefined,
             data: { initialContent: '', config: { height: 700 } },
         });
         await act(async () => { render(<EditorWysywigMceTable context={ctx} />); });
         expect((window as any).tinymce.init).toHaveBeenCalledWith(
-            expect.objectContaining({ height: 700 })
+            expect.objectContaining({ height: 500 })
         );
     });
 });

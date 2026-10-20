@@ -18,7 +18,6 @@ import {
 // ── Defaults expected when nothing is supplied ─────────────────────────────────
 
 const FULL_DEFAULTS = {
-    tinyMceApiKey:      '',
     width:              'auto',
     height:             500,
     resize:             'true',
@@ -61,7 +60,6 @@ describe('validateSettingsAgainstSchema — happy paths', () => {
 
     it('accepts a fully populated valid payload', () => {
         const full = {
-            tinyMceApiKey: 'my-key',
             width: 1200,
             height: 600,
             resize: 'both',
@@ -113,13 +111,14 @@ describe('validateSettingsAgainstSchema — empty-string sanitization', () => {
         expect(result.data.skin).toBe('oxide');
     });
 
-    it('treats "" tinyMceApiKey as absent → injects default ""', () => {
+    // `tinyMceApiKey` left the declaration (kernel prompt 131 — nothing read it); `contentStyle` is the same case.
+    it('treats "" contentStyle as absent → injects default ""', () => {
         // For string fields whose default IS "", the result is identical but the
         // mechanism (sanitize → Zod default) must still be exercised.
-        const result = validateSettingsAgainstSchema({ tinyMceApiKey: '' });
+        const result = validateSettingsAgainstSchema({ contentStyle: '' });
         expect(result.success).toBe(true);
         if (!result.success) return;
-        expect(result.data.tinyMceApiKey).toBe('');
+        expect(result.data.contentStyle).toBe('');
     });
 
     it('treats "" resize as absent → injects default "true"', () => {
@@ -141,14 +140,14 @@ describe('validateSettingsAgainstSchema — empty-string sanitization', () => {
             height: '',
             skin: '',
             resize: '',
-            tinyMceApiKey: 'real-key',
+            contentStyle: 'body{margin:0}',
         });
         expect(result.success).toBe(true);
         if (!result.success) return;
         expect(result.data.height).toBe(500);
         expect(result.data.skin).toBe('oxide');
         expect(result.data.resize).toBe('true');
-        expect(result.data.tinyMceApiKey).toBe('real-key');
+        expect(result.data.contentStyle).toBe('body{margin:0}');
     });
 
 });
