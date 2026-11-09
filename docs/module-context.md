@@ -39,6 +39,8 @@ that other modules (posts, pages, emails, articles) embed to enable formatted HT
 | src/lib/tinyMceLoader.ts | **lib-Isolation:** ładuje TinyMCE z Quanti CDN R2 (`cdn.quanti-system.cloud`). Eksportuje `loadTinyMceFromQuantiCdn()` |
 | src/lib/validators/module-settings.schema.ts | Auto-Default Injection & Strict Coercion — sanitizes empty strings from AutoForm, coerces numeric strings, injects configSchema defaults for missing fields, returns typed ValidationResult or throws SettingsValidationError (422) |
 | .agent/overrides/override-tinymce-cdn.md | **RESOLVED:** opis zasobu wewnętrznego R2 — zewnętrzny `cdn.tiny.cloud` zastąpiony |
+| src/utils/report-error.ts | H-ERROR-NOT-IN-AE (CLI template) — `reportWorkerError(env, ctx, traceId, 'editor-wysywig-mce', CODE, { projectId, operation })` for RPC methods that catch a failure or refuse, and `moduleErrorSinkForWorker` that the entrypoint installs so shared code reaches `BACKEND.system_logEvent` as an ERROR row; the message is the code, never the error's text; never throws |
+| src/utils/report-module-error.ts | H-ERROR-NOT-IN-AE (CLI template, rewritten by `quanti update`) — `reportModuleError(CODE, { operation })` callable from anywhere; delivers to the sink installed once per environment (the shell's `context.api.reportError` on the screen, the worker's sink in the entrypoint); reports made before the install wait (max 20); code only, never a value |
 
 ## Rules & Constraints
 
