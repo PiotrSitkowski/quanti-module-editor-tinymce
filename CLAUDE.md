@@ -61,6 +61,7 @@ Tooling support: `quanti skill apply --list` shows active skills;
 
 Read these first — they define what is and is not allowed in every Fleet module:
 
+- [CODE STANDARDS](./.agent/rules/CODE_STANDARDS.md)
 - [CORE UI MODULES](./.agent/rules/CORE_UI_MODULES.md)
 - [CQRS PATTERNS](./.agent/rules/CQRS_PATTERNS.md)
 - [DATA ACCESS PATTERNS](./.agent/rules/DATA_ACCESS_PATTERNS.md)
@@ -70,6 +71,7 @@ Read these first — they define what is and is not allowed in every Fleet modul
 - [LOCALIZATION STANDARDS](./.agent/rules/LOCALIZATION_STANDARDS.md)
 - [MFE PATTERNS](./.agent/rules/MFE_PATTERNS.md)
 - [MODULE MIGRATION PROMPT](./.agent/rules/MODULE_MIGRATION_PROMPT.md)
+- [REGISTRY ACCESS](./.agent/rules/REGISTRY_ACCESS.md)
 - [SELF DOCUMENTING STANDARDS](./.agent/rules/SELF_DOCUMENTING_STANDARDS.md)
 - [TESTING STANDARDS](./.agent/rules/TESTING_STANDARDS.md)
 - [UI EXTENSION SLOTS](./.agent/rules/UI_EXTENSION_SLOTS.md)

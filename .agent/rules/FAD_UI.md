@@ -2,7 +2,7 @@
 
 > **Ta reguła jest dystrybuowana przez Quanti CLI** (`create-module` + `quanti update`). Kanoniczne źródło:
 > kernel `.agent/rules/FAD_UI_STANDARDS.md`. **Nie edytuj kopii `.agent/rules/FAD_UI.md` w module** —
-> edycja zawsze w kernelu, potem `npm run sync:cli-templates` + re-dystrybucja. Wersja: `fadRulesVersion 1.0.0`.
+> edycja zawsze w kernelu, potem `npm run sync:cli-templates` + re-dystrybucja. Wersja: `fadRulesVersion 1.1.0`.
 > Kontekst decyzji: ADR `adr-external-module-fad`; FaD to warstwa SHELL (`00-DESIGN §6`), moduł nadal NIE zna
 > regionów — dostarcza UI przez sloty/capabilities, a shell komponuje layout.
 
@@ -18,7 +18,7 @@ się z tym **dwutorowo**:
 - **Tor (b) — host MFE / pełnostronicowa UI (bucket B):** własna pełna strona modułu (edytor, kokpit),
   **świadomie POZA shell-layoutem**. Renderowana z CDN jako RemoteComponent; shell tylko do niej prowadzi.
 
-## Reguły egzekwowalne (R-FAD-1 … R-FAD-12)
+## Reguły egzekwowalne (R-FAD-1 … R-FAD-13)
 
 ### R-FAD-1 — Rozróżnij dwa tory
 Każda powierzchnia UI MUSI być świadomie zaklasyfikowana jako bucket-A (widget/host w manifest v2) albo bucket-B
@@ -76,6 +76,40 @@ Moduł stempluje przyjętą wersję w `.agent/rules/.fad-rules-version` (robi to
 `quanti deploy` ostrzega, gdy wersja modułu < aktualnej z CLI, i blokuje przy niezgodności MAJOR. Nieaktualne
 reguły domykasz przez `quanti update` (re-emisja szablonów).
 
+### R-FAD-13 — Formularz modułu odmawia na polu, środkami kitu
+Okno albo panel modułu z polami do wypełnienia **nie rysuje własnej odmowy** (czerwonego zdania pod
+formularzem, własnej ramki). Staje na kontrakcie formularza kitu, a obwódkę, dymek z powodem i ocenę pól
+daje kit — ten sam, który obsługuje ekrany z kanwy:
+
+| Element | Co nosi |
+|---|---|
+| kontener formularza | `data-cs-form` |
+| pole (etykieta + podpowiedź + kontrolka) | `className="cs-field"` |
+| pudełko wokół SAMEJ kontrolki | `className="cs-field__box"` — dymek kotwiczy się do niego; bez niego staje nad etykietą i zasłania pole wyżej |
+| kontrolka | `className="cs-field__control"`, niepuste `name`, `required` gdzie trzeba; własne zdanie odmowy: `data-cs-error` |
+| etykieta pola wymaganego | gwiazdka `*` w kolorze `hsl(var(--destructive))` |
+
+```tsx
+import { attachRefusalMarks, collectProblems, formWordsI18n } from '@quanti/ui-kit';
+
+useEffect(() => attachRefusalMarks(formRef.current!, formWordsI18n[lang]), [lang]); // obwódka + dymek po opuszczeniu pola
+
+function submit() {
+  const problems = collectProblems(formRef.current!, formWordsI18n[lang]);        // ta sama ocena co w kanwie
+  if (problems.length > 0) {
+    for (const p of problems) p.control.dispatchEvent(new FocusEvent('focusout', { bubbles: true }));
+    problems[0].control.focus();                                                   // dymek otwiera się przy pierwszym
+    return;
+  }
+  // …
+}
+```
+
+Czego kit nie wie (np. „ta nazwa jest już zajęta w tej kopii”), okno mówi **pod tym polem**, którego to dotyczy,
+nie pod formularzem. Okno stoi na warstwie powłoki (`z-index: 50`) z `aria-modal="true"` — od ui-kit 1.57.0 dymek
+pola w takim oknie staje nad nim. Pole adresu/identyfikatora: `SlugInput` (+ `useFollowingSlug`, gdy wynika z nazwy).
+Wzór: `NewScreenDialog.tsx` w `quanti-module-canvas-studio`; w jądrze `ConnectorManagerConsole.tsx`.
+
 ## Egzekwowalność
 - Statycznie (guardy CLI + `validate:fleet`): R-FAD-2 (manifest v2), R-FAD-3 (leak systemowy), koegzystencja
   `widgets[]`+`uiExtensions[]` (warning).
@@ -83,3 +117,5 @@ reguły domykasz przez `quanti update` (re-emisja szablonów).
 - Inspekcja: R-FAD-4 (ui-kit), R-FAD-5 (`vite.config.ts` external), R-FAD-1 (klasyfikacja w manifeście).
 - `quanti deploy`: R-FAD-12 (`fadRulesVersion` warn/block).
 - `pretool-tdd-gate`: R-FAD-10.
+- Inspekcja + test modułu: R-FAD-13 (kontrakt formularza: `data-cs-form`, `cs-field`, `cs-field__box`,
+  `cs-field__control` + `name`; test sprawdza atrybuty i przekazanie formularza do `attachRefusalMarks`).

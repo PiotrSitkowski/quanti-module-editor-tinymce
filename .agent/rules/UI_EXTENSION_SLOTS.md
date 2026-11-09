@@ -1,20 +1,35 @@
 # UI Extension Slots — Quanti Module Catalog
 
-> ⚠️ **DEPRECATED (H-MANIFEST-LEGACY-EXTENSIONS — deadline removal 2026-06-14).**
-> `definition.ts → uiExtensions[].slot` is deprecated. New modules MUST use
-> manifest v2: `widgets[]` (provider intent) + `consumesSlots[]` (consumer
-> intent). See ADR `.agent/knowledge/L1/adr/adr-deprecate-ui-extensions.md`.
-> This document is preserved as a slot-catalog reference for modules still
-> on the legacy field — migrate before the deadline.
+> **⚠️ DEPRECATED (H-MANIFEST-LEGACY-EXTENSIONS, deadline removal `2026-06-14`)** — patrz ADR
+> [`adr-deprecate-ui-extensions.md`](../knowledge/L1/adr/adr-deprecate-ui-extensions.md) i regułę
+> [`H-MANIFEST-LEGACY-EXTENSIONS`](anti-hallucination-patterns.md#h-manifest-legacy-extensions).
+>
+> **Nowe moduły MUSZĄ używać manifest v2:**
+> - `widgets: [{ id, provides: <capability-id>, version, modes: { ... } }]` — dla rzeczy które moduł
+>   OFERUJE innym (provider intent).
+> - `consumesSlots: [{ slotId, consumerView, requires: { capability, binding } }]` — dla slotów które
+>   moduł chce wypełnić cudzymi widgetami (consumer intent).
+>
+> Po `2026-06-14` kernel przestaje czytać `uiExtensions[]` / `scope` / `activeIn`. Moduły deklarujące
+> tylko legacy fields znikną z resolvera SCW. `warnDeprecatedUiExtensions` (`src/lib/services/legacy-warnings.ts`)
+> już emituje telemetry sample per moduł per isolat — sprawdź w dashboardzie.
+>
+> **Migracja istniejących modułów:** `quanti update` w katalogu modułu odświeża rules i pokazuje
+> kierunek migracji. Pełna instrukcja w `MODULE_MIGRATION_PROMPT.md`.
+>
+> **Ten dokument zachowany WYŁĄCZNIE jako legacy reference** dla istniejących modułów przed
+> migracją. NIE używaj `uiExtensions[].slot` w nowym kodzie.
 
-> Source-of-truth dla agenta budującego moduł — **jakie sloty istnieją** i **jak ich używać** w `definition.ts → uiExtensions[].slot`.
+---
+
+> Source-of-truth dla agenta budującego moduł — **jakie sloty istnieją** i **jak ich używać** w `definition.ts → uiExtensions[].slot` (legacy path) lub `consumesSlots[].slotId` (manifest v2 path).
 > Synchronizowane przez `@quanti/cli` przy `quanti create-module` / `quanti update`.
 
 ## Konwencja
 
 - **snake_case wszędzie** (`dashboard_widget`, NIE `dashboardWidget` ani `DASHBOARD_WIDGET`).
 - Sloty dzielą się na:
-  - **Globalne** (shell renderuje je w skali całej aplikacji): `dashboard_widget`, `top_bar`, `bottom_bar`, `navigation_item`, `settings_panel`, `right_sidebar_*`, `left_module_primary`, `entity_detail_tab`, `list_actions`.
+  - **Globalne** (shell renderuje je w skali całej aplikacji): `dashboard_primary`, `dashboard_widget`, `top_bar`, `bottom_bar`, `navigation_item`, `settings_panel`, `right_sidebar_*`, `left_module_primary`, `entity_detail_tab`, `list_actions`.
   - **Per-moduł** (dedykowane konkretnej domenie, custom string): `post_editor_sidebar`, `media_modal_sidebar`, `[table]_main_view`, etc.
 - Lista globalnych slotów (`SystemSlotType`) jest **rozszerzalna** — `slot` ma typ `string`, więc moduł może wprowadzić własny custom slot dla swojej domeny. Nie wymaga to zmiany w kernelu.
 
@@ -22,6 +37,7 @@
 
 | Slot | Gdzie się renderuje | Typowe użycie |
 |---|---|---|
+| `dashboard_primary` | Dashboard — główna strefa treści | Jeden moduł zajmuje całą strefę; `core_module_manager` domyślnie (priority 100) |
 | `dashboard_widget` | Dashboard główny | KPI cards, charts, recent items |
 | `list_actions` | Pasek akcji nad listą | Bulk actions, filtry, export |
 | `top_bar` | Górny pasek shell | Quick actions, search, notifications |
