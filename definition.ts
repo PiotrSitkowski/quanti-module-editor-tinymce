@@ -252,147 +252,209 @@ export type EditorConfig = z.infer<typeof configSchema>;
 
 // Configuration UI Hints
 // Keys MUST match configSchema keys (17 fields) — enforced by `quanti validate`.
-// Labels/descriptions are English strings — Kernel manifest schema accepts only string type.
-// Platform i18n note: per manifest validator contract, configUi fields are flat strings.
-// Module UI strings (component layer) remain fully localized via src/locales/*.ts.
+// Every text the settings page draws (name, description, group title, option names) is `{ en, pl }` — the page shows
+// one plain string to every reader and notes that a translation is missing (`quanti validate`: settings-one-language).
+// Module UI strings (component layer) are localized separately via src/locales/*.ts.
+type Text = { en: string; pl: string };
+const GROUP_LAYOUT: Text = { en: 'Layout', pl: 'Układ' };
+const GROUP_APPEARANCE: Text = { en: 'Appearance', pl: 'Wygląd' };
+const GROUP_FUNCTIONALITY: Text = { en: 'Functionality', pl: 'Funkcje' };
+const GROUP_BEHAVIOR: Text = { en: 'Behavior', pl: 'Zachowanie' };
+
 export const configUi: Record<string, {
-    label: string;
+    label: Text;
     widget: string;
-    description?: string;
-    options?: Array<{ value: string; label: string }>;
-    group?: string;
+    description?: Text;
+    options?: Array<{ value: string; label: Text }>;
+    group?: Text;
     min?: number;
     max?: number;
 }> = {
     // ── UI & Layout ──────────────────────────────────────────────────────────
     width: {
-        label:       'Editor width',
+        label:       { en: 'Editor width', pl: 'Szerokość edytora' },
         widget:      'text',
-        description: 'Number (px) or "auto" for full container width.',
-        group:       'Layout',
+        description: {
+            en: 'Number (px) or "auto" for full container width.',
+            pl: 'Liczba (w px) albo „auto” — wtedy edytor zajmuje całą szerokość kontenera.',
+        },
+        group:       GROUP_LAYOUT,
     },
     height: {
-        label:  'Editor height (px)',
-        widget: 'number',
-        min:    200,
-        max:    2000,
-        group:  'Layout',
+        label:       { en: 'Editor height (px)', pl: 'Wysokość edytora (px)' },
+        widget:      'number',
+        description: {
+            en: 'Height of the editing area in pixels, from 200 to 2000.',
+            pl: 'Wysokość obszaru edycji w pikselach, od 200 do 2000.',
+        },
+        min:         200,
+        max:         2000,
+        group:       GROUP_LAYOUT,
     },
     resize: {
-        label:   'Resize handle',
-        widget:  'select',
+        label:       { en: 'Resize handle', pl: 'Uchwyt zmiany rozmiaru' },
+        widget:      'select',
+        description: {
+            en: 'Whether a person can drag the editor’s corner to change its size, and along which axes.',
+            pl: 'Czy osoba może przeciągnąć róg edytora, żeby zmienić jego rozmiar, i w których osiach.',
+        },
         options: [
-            { value: 'false', label: 'Disabled' },
-            { value: 'true',  label: 'Vertical' },
-            { value: 'both',  label: 'Vertical & horizontal' },
+            { value: 'false', label: { en: 'Disabled', pl: 'Wyłączony' } },
+            { value: 'true',  label: { en: 'Vertical', pl: 'Tylko w pionie' } },
+            { value: 'both',  label: { en: 'Vertical & horizontal', pl: 'W pionie i w poziomie' } },
         ],
-        group: 'Layout',
+        group:       GROUP_LAYOUT,
     },
     menubar: {
-        label:       'Menu bar',
+        label:       { en: 'Menu bar', pl: 'Pasek menu' },
         widget:      'switch',
-        description: 'Show the menu bar (File / Edit / View / Insert / Format / Tools / Table / Help).',
-        group:       'Layout',
+        description: {
+            en: 'Show the menu bar (File / Edit / View / Insert / Format / Tools / Table / Help).',
+            pl: 'Pokazuje pasek menu (Plik / Edycja / Widok / Wstaw / Format / Narzędzia / Tabela / Pomoc).',
+        },
+        group:       GROUP_LAYOUT,
     },
     statusbar: {
-        label:       'Status bar',
+        label:       { en: 'Status bar', pl: 'Pasek stanu' },
         widget:      'switch',
-        description: 'Show the bottom status bar with word counter and resize handle.',
-        group:       'Layout',
+        description: {
+            en: 'Show the bottom status bar with word counter and resize handle.',
+            pl: 'Pokazuje dolny pasek stanu z licznikiem słów i uchwytem zmiany rozmiaru.',
+        },
+        group:       GROUP_LAYOUT,
     },
     toolbarSticky: {
-        label:       'Sticky toolbar',
+        label:       { en: 'Sticky toolbar', pl: 'Przyklejony pasek narzędzi' },
         widget:      'switch',
-        description: 'Toolbar stays visible while scrolling long content.',
-        group:       'Layout',
+        description: {
+            en: 'Toolbar stays visible while scrolling long content.',
+            pl: 'Pasek narzędzi zostaje widoczny podczas przewijania długiej treści.',
+        },
+        group:       GROUP_LAYOUT,
     },
 
     // ── Branding ─────────────────────────────────────────────────────────────
     branding: {
-        label:       'TinyMCE branding logo',
+        label:       { en: 'TinyMCE branding logo', pl: 'Logo TinyMCE' },
         widget:      'switch',
-        description: 'Show/hide the TinyMCE logo in the status bar (recommended: off for white-label).',
-        group:       'Appearance',
+        description: {
+            en: 'Show/hide the TinyMCE logo in the status bar (recommended: off for white-label).',
+            pl: 'Pokazuje albo ukrywa logo TinyMCE na pasku stanu (zalecane: wyłączone przy własnej marce).',
+        },
+        group:       GROUP_APPEARANCE,
     },
 
     // ── Theming & Styling ────────────────────────────────────────────────────
     skin: {
-        label:   'Editor skin',
-        widget:  'select',
+        label:       { en: 'Editor skin', pl: 'Motyw edytora' },
+        widget:      'select',
+        description: {
+            en: 'The look of the editor itself — its toolbar and frame: light or dark.',
+            pl: 'Wygląd samego edytora — jego paska narzędzi i ramki: jasny albo ciemny.',
+        },
         options: [
-            { value: 'oxide',      label: 'Oxide (light)' },
-            { value: 'oxide-dark', label: 'Oxide Dark' },
+            { value: 'oxide',      label: { en: 'Oxide (light)', pl: 'Oxide (jasny)' } },
+            { value: 'oxide-dark', label: { en: 'Oxide Dark', pl: 'Oxide (ciemny)' } },
         ],
-        group: 'Appearance',
+        group:       GROUP_APPEARANCE,
     },
     contentCss: {
-        label:   'Content area style',
-        widget:  'select',
+        label:       { en: 'Content area style', pl: 'Styl obszaru edycji' },
+        widget:      'select',
+        description: {
+            en: 'How the text area itself looks: the default, dark, a document of limited width, or a serif writing face.',
+            pl: 'Jak wygląda sam obszar z tekstem: domyślnie, ciemno, dokument o ograniczonej szerokości albo pismo szeryfowe.',
+        },
         options: [
-            { value: 'default',  label: 'Default' },
-            { value: 'dark',     label: 'Dark' },
-            { value: 'document', label: 'Document (limited width)' },
-            { value: 'writer',   label: 'Writer (serif font)' },
+            { value: 'default',  label: { en: 'Default', pl: 'Domyślny' } },
+            { value: 'dark',     label: { en: 'Dark', pl: 'Ciemny' } },
+            { value: 'document', label: { en: 'Document (limited width)', pl: 'Dokument (ograniczona szerokość)' } },
+            { value: 'writer',   label: { en: 'Writer (serif font)', pl: 'Pisarski (krój szeryfowy)' } },
         ],
-        group: 'Appearance',
+        group:       GROUP_APPEARANCE,
     },
     contentStyle: {
-        label:       'Custom CSS (content_style)',
+        label:       { en: 'Custom CSS (content_style)', pl: 'Własny CSS (content_style)' },
         widget:      'textarea',
-        description: 'CSS injected into the editor iframe. E.g. body { font-family: Georgia; }',
-        group:       'Appearance',
+        description: {
+            en: 'CSS injected into the editor iframe. E.g. body { font-family: Georgia; }',
+            pl: 'CSS wstrzykiwany do ramki edytora. Np. body { font-family: Georgia; }',
+        },
+        group:       GROUP_APPEARANCE,
     },
 
     // ── Plugins ──────────────────────────────────────────────────────────────
     plugins: {
-        label:       'TinyMCE plugins',
+        label:       { en: 'TinyMCE plugins', pl: 'Wtyczki TinyMCE' },
         widget:      'textarea',
-        description: 'Space-separated plugin list. Changes require an editor reload.',
-        group:       'Functionality',
+        description: {
+            en: 'Space-separated plugin list. Changes require an editor reload.',
+            pl: 'Lista wtyczek oddzielonych spacjami. Zmiana wymaga ponownego załadowania edytora.',
+        },
+        group:       GROUP_FUNCTIONALITY,
     },
 
     // ── Toolbar ──────────────────────────────────────────────────────────────
     toolbar: {
-        label:       'Toolbar buttons',
+        label:       { en: 'Toolbar buttons', pl: 'Przyciski paska narzędzi' },
         widget:      'textarea',
-        description: 'Button configuration. Separate groups with |. E.g. bold italic | link | code',
-        group:       'Functionality',
+        description: {
+            en: 'Button configuration. Separate groups with |. E.g. bold italic | link | code',
+            pl: 'Układ przycisków. Grupy oddziela się znakiem |. Np. bold italic | link | code',
+        },
+        group:       GROUP_FUNCTIONALITY,
     },
     toolbarMode: {
-        label:   'Toolbar overflow mode',
-        widget:  'select',
+        label:       { en: 'Toolbar overflow mode', pl: 'Pasek narzędzi, gdy brakuje miejsca' },
+        widget:      'select',
+        description: {
+            en: 'What the toolbar does when its buttons do not fit in one row.',
+            pl: 'Co robi pasek narzędzi, gdy jego przyciski nie mieszczą się w jednym rzędzie.',
+        },
         options: [
-            { value: 'floating',  label: 'Floating (dropdown)' },
-            { value: 'sliding',   label: 'Sliding (expandable)' },
-            { value: 'scrolling', label: 'Scrolling' },
-            { value: 'wrap',      label: 'Wrap (multiline)' },
+            { value: 'floating',  label: { en: 'Floating (dropdown)', pl: 'Rozwijany (lista)' } },
+            { value: 'sliding',   label: { en: 'Sliding (expandable)', pl: 'Rozsuwany' } },
+            { value: 'scrolling', label: { en: 'Scrolling', pl: 'Przewijany' } },
+            { value: 'wrap',      label: { en: 'Wrap (multiline)', pl: 'Zawijany (wiele wierszy)' } },
         ],
-        group: 'Functionality',
+        group:       GROUP_FUNCTIONALITY,
     },
 
     // ── Behavior ─────────────────────────────────────────────────────────────
     browserSpellcheck: {
-        label:       'Browser spell check',
+        label:       { en: 'Browser spell check', pl: 'Sprawdzanie pisowni przez przeglądarkę' },
         widget:      'switch',
-        description: 'Underline misspelled words using the browser built-in spell checker.',
-        group:       'Behavior',
+        description: {
+            en: 'Underline misspelled words using the browser built-in spell checker.',
+            pl: 'Podkreśla błędnie napisane słowa wbudowanym sprawdzaniem pisowni przeglądarki.',
+        },
+        group:       GROUP_BEHAVIOR,
     },
     pasteAsText: {
-        label:       'Paste as plain text',
+        label:       { en: 'Paste as plain text', pl: 'Wklejanie jako zwykły tekst' },
         widget:      'switch',
-        description: 'Strip HTML formatting when pasting from clipboard.',
-        group:       'Behavior',
+        description: {
+            en: 'Strip HTML formatting when pasting from clipboard.',
+            pl: 'Usuwa formatowanie HTML przy wklejaniu ze schowka.',
+        },
+        group:       GROUP_BEHAVIOR,
     },
     pasteDataImages: {
-        label:       'Paste images (base64)',
+        label:       { en: 'Paste images (base64)', pl: 'Wklejanie obrazów (base64)' },
         widget:      'switch',
-        description: 'Allow pasting images from clipboard directly into the editor content.',
-        group:       'Behavior',
+        description: {
+            en: 'Allow pasting images from clipboard directly into the editor content.',
+            pl: 'Pozwala wkleić obraz ze schowka bezpośrednio do treści edytora.',
+        },
+        group:       GROUP_BEHAVIOR,
     },
     automaticUploads: {
-        label:       'Automatic image upload',
+        label:       { en: 'Automatic image upload', pl: 'Automatyczne wgrywanie obrazów' },
         widget:      'switch',
-        description: 'Automatically upload base64 images after paste (requires images_upload_url).',
-        group:       'Behavior',
+        description: {
+            en: 'Automatically upload base64 images after paste (requires images_upload_url).',
+            pl: 'Po wklejeniu automatycznie wgrywa obrazy base64 (wymaga images_upload_url).',
+        },
+        group:       GROUP_BEHAVIOR,
     },
 };
