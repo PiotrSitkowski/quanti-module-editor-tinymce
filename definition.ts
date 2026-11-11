@@ -16,6 +16,11 @@ import { z } from 'zod';
 export const editor_wysywig_mceDefinition = {
     id:            'editor-wysywig-mce',
     name:          'Editor Wysywig Mce',
+    // The words a person reads in the panel, in both languages; `name` stays the registry's own.
+    identity: {
+        name:        { en: { value: 'Rich-text editor', provenance: 'creator' }, pl: { value: 'Edytor tekstu', provenance: 'creator' } },
+        description: { en: { value: 'Reusable rich-text editor (TinyMCE) that other modules embed to write formatted content; it stores nothing of its own.', provenance: 'creator' }, pl: { value: 'Edytor tekstu sformatowanego (TinyMCE) do osadzenia przez inne moduły, żeby pisać treść z formatowaniem; sam niczego nie przechowuje.', provenance: 'creator' } },
+    },
     serviceType:   'content',
     schemaVersion: 1,
     version:       '1.1.3',
